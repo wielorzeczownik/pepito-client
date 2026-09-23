@@ -246,6 +246,7 @@ jobs:
         shell: bash
         env:
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+          RUSTFLAGS: ${{ matrix.musl && '-C target-feature=-crt-static' || '' }}
         run: |
           set -euo pipefail
           cargo build --release --locked --target "${{ matrix.target }}" -p pepito-ffi

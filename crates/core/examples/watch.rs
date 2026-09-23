@@ -1,6 +1,6 @@
 //! cargo run --example watch --features rustls
 
-use pepito_client::{SSE_URL, Tracker, Update, net};
+use pepito_client::{Tracker, Update, net};
 
 #[tokio::main]
 async fn main() {
@@ -11,7 +11,7 @@ async fn main() {
   net::watch(
     None,
     &mut tracker,
-    SSE_URL,
+    &net::WatchOptions::default(),
     |update, tracker| match update {
       Update::Sighting {
         sighting,

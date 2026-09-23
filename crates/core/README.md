@@ -18,9 +18,9 @@ pepito-client = { version = "0.1", features = ["rustls"] }  # net + reqwest's ru
 Without either feature the core has no network dependencies.
 
 ```rust
-use pepito_client::{net, SSE_URL, Tracker, Update};
+use pepito_client::{net, Tracker, Update};
 
-// Your client, optional like `setHttpClient()` in PHP (None = reqwest's default).
+// Your client, optional(None = reqwest's default).
 // For watch() use read_timeout/connect_timeout, not timeout(), which caps the whole stream.
 let client = reqwest::Client::builder()
     .user_agent("my-app/1.0")
@@ -31,7 +31,9 @@ let mut t = Tracker::new();
 net::refresh(Some(&client), &mut t).await?; // cache from REST
 println!("{:?}", t.state());          // Away { since: 1790000391 }
 
-net::watch(Some(&client), &mut t, SSE_URL, |u, t| { // reconnect and backoff handled inside
+// url, idle_timeout, max_backoff
+let options = net::WatchOptions { max_backoff: std::time::Duration::from_secs(30), ..Default::default() };
+net::watch(Some(&client), &mut t, &options, |u, t| { // reconnect and backoff handled inside
     if let Update::Sighting { sighting, changed: true } = u {
         println!("{} -> {:?}", sighting.way.as_str(), t.state());
     }

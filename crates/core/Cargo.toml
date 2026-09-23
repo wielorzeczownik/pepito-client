@@ -30,10 +30,12 @@ futures-util = { version = "0.3.34", default-features = false, features = [
 ], optional = true }
 # Timers that tick on wasm32
 futures-timer = { version = "3.0.3", features = ["wasm-bindgen"], optional = true }
+# Reconnect warnings
+log = { version = "0.4.34", optional = true }
 
 [features]
 default = []
-net = ["dep:reqwest", "dep:futures-util", "dep:futures-timer"]
+net = ["dep:reqwest", "dep:futures-util", "dep:futures-timer", "dep:log"]
 # reqwest's rustls with its default provider (aws-lc), for when nothing else picks TLS
 rustls = ["net", "reqwest/rustls"]
 

@@ -756,6 +756,7 @@ dependencies = [
  "chrono",
  "futures-timer",
  "futures-util",
+ "log",
  "reqwest",
  "serde",
  "serde_json",

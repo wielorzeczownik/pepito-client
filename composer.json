@@ -39,7 +39,7 @@
         "class": "Pepito\\Installer\\LibraryInstallerPlugin"
     },
     "require-dev": {
-        "laravel/pint": "1.32.1",
+        "laravel/pint": "1.30.4",
         "nyholm/psr7": "1.8.2",
         "phpunit/phpunit": "11.5.56"
     },
@@ -51,6 +51,9 @@
     "config": {
         "allow-plugins": {
             "wielorzeczownik/pepito-client": true
+        },
+        "platform": {
+            "php": "8.2.33"
         }
     }
 }

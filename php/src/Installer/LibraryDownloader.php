@@ -33,6 +33,7 @@ final class LibraryDownloader
         }
 
         $version = InstalledVersions::getPrettyVersion('wielorzeczownik/pepito-client');
+        $version = $version !== null ? preg_replace('/^v/', '', $version, 1) : null;
         if ($version === null || ! preg_match('/^\d+\.\d+\.\d+/', $version)) {
             $io->writeError('<warning>pepito: not installed from a tagged release, build it with: make dylib</warning>');
 
@@ -93,7 +94,7 @@ final class LibraryDownloader
         $archiveName = "pepito-$asset.tar.gz";
         $archive = self::download($base.$archiveName);
 
-        if (! preg_match('/^([0-9a-f]{64})\s+\Q'.$archiveName.'\E$/m', $checksums, $match)) {
+        if (! preg_match('/^([0-9a-f]{64})\s+(?:\.\/)?\Q'.$archiveName.'\E$/m', $checksums, $match)) {
             throw new RuntimeException("checksum for $archiveName not listed in SHA256SUMS");
         }
         if (! hash_equals($match[1], hash('sha256', $archive))) {
@@ -121,7 +122,6 @@ final class LibraryDownloader
         $body = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $error = curl_error($ch);
-        curl_close($ch);
 
         if ($body === false || $status !== 200) {
             throw new RuntimeException("GET $url failed: HTTP $status $error");

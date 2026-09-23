@@ -178,6 +178,10 @@ jobs:
         working-directory: js
         run: npm ci
 
+      - name: Build package
+        working-directory: js
+        run: npm run build
+
       - name: Lint
         working-directory: js
         run: npm run lint

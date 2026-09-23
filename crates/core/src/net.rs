@@ -29,8 +29,19 @@ async fn with_timeout<F: Future>(limit: Duration, work: F) -> Option<F::Output> 
 /// # Errors
 ///
 /// Returns the reqwest error when the request or the body read fails.
-pub async fn refresh(tracker: &mut Tracker) -> reqwest::Result<Option<Update>> {
-  let body = reqwest::get(REST_URL).await?.text().await?;
+pub async fn refresh(
+  client: Option<&reqwest::Client>,
+  tracker: &mut Tracker,
+) -> reqwest::Result<Option<Update>> {
+  let body = client
+    .cloned()
+    .unwrap_or_default()
+    .get(REST_URL)
+    .send()
+    .await?
+    .error_for_status()?
+    .text()
+    .await?;
 
   Ok(tracker.feed_rest(&body))
 }
@@ -41,11 +52,20 @@ pub async fn refresh(tracker: &mut Tracker) -> reqwest::Result<Option<Update>> {
 ///
 /// Returns the reqwest error when the connection fails or a chunk cannot be read.
 pub async fn watch_once<F: FnMut(Update, &Tracker)>(
+  client: Option<&reqwest::Client>,
   tracker: &mut Tracker,
   url: &str,
   on_update: &mut F,
 ) -> reqwest::Result<()> {
-  let mut stream = reqwest::get(url).await?.bytes_stream();
+  let mut stream = client
+    .cloned()
+    .unwrap_or_default()
+    .get(url)
+    .header(reqwest::header::ACCEPT, "text/event-stream")
+    .send()
+    .await?
+    .error_for_status()?
+    .bytes_stream();
   while let Some(Some(chunk)) = with_timeout(IDLE_TIMEOUT, stream.next()).await {
     for update in tracker.feed_chunk(&String::from_utf8_lossy(&chunk?)) {
       on_update(update, tracker);
@@ -58,14 +78,21 @@ pub async fn watch_once<F: FnMut(Update, &Tracker)>(
 ///
 /// `should_stop` is consulted between reconnects, which is how a binding asks
 /// the loop to wind down without killing the task from the outside.
-pub async fn watch<F, S>(tracker: &mut Tracker, url: &str, mut on_update: F, mut should_stop: S)
-where
+pub async fn watch<F, S>(
+  client: Option<&reqwest::Client>,
+  tracker: &mut Tracker,
+  url: &str,
+  mut on_update: F,
+  mut should_stop: S,
+) where
   F: FnMut(Update, &Tracker),
   S: FnMut() -> bool,
 {
+  // Built once, so the reconnects reuse its pool.
+  let client = client.cloned().unwrap_or_default();
   let mut backoff = 1;
   while !should_stop() {
-    match watch_once(tracker, url, &mut on_update).await {
+    match watch_once(Some(&client), tracker, url, &mut on_update).await {
       Ok(()) => backoff = 1,
       Err(_) => backoff = (backoff * 2).min(60),
     }

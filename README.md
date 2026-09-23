@@ -18,7 +18,7 @@ The core never touches the network. Transport belongs to the binding, which is w
 
 ```text
 crates/core/   no-IO core: state, cache, dedup, heartbeat,  -> crates.io
-               archive + stats, feature "net"
+               archive + stats, feature "net" (your reqwest client)
 crates/ffi/    C ABI, JSON in / JSON out                    -> PHP
 crates/wasm/   wasm-bindgen, JS objects with no JSON round trip -> npm
 

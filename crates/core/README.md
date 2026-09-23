@@ -11,21 +11,31 @@
 No IO. It runs identically natively and on wasm. Transport (fetch/curl/reqwest) belongs to the binding. This crate only processes whatever it is handed.
 
 ```toml
-pepito-client = { version = "0.1", features = ["net"] }   # without "net" the core has no network dependencies
+pepito-client = { version = "0.1", features = ["net"] }     # bring your own reqwest client and its TLS
+pepito-client = { version = "0.1", features = ["rustls"] }  # net + reqwest's rustls, nothing to set up
 ```
 
+Without either feature the core has no network dependencies.
+
 ```rust
-use pepito_client::{net, Tracker, Update};
+use pepito_client::{net, SSE_URL, Tracker, Update};
+
+// Your client, optional like `setHttpClient()` in PHP (None = reqwest's default).
+// For watch() use read_timeout/connect_timeout, not timeout(), which caps the whole stream.
+let client = reqwest::Client::builder()
+    .user_agent("my-app/1.0")
+    .read_timeout(std::time::Duration::from_secs(60))
+    .build()?;
 
 let mut t = Tracker::new();
-net::refresh(&mut t).await?;          // cache from REST
+net::refresh(Some(&client), &mut t).await?; // cache from REST
 println!("{:?}", t.state());          // Away { since: 1790000391 }
 
-net::watch(&mut t, |u, t| {           // reconnect and backoff handled inside
+net::watch(Some(&client), &mut t, SSE_URL, |u, t| { // reconnect and backoff handled inside
     if let Update::Sighting { sighting, changed: true } = u {
         println!("{} -> {:?}", sighting.way.as_str(), t.state());
     }
-}).await
+}, || false).await
 ```
 
 Without the `net` feature you feed the tracker yourself, from whatever reads the network:

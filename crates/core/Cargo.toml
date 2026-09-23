@@ -18,13 +18,12 @@ serde_json.workspace = true
 # Date/time
 chrono = { version = "0.4.45", default-features = false, features = ["std", "alloc"] }
 
-# Network client, feature "net" only
+# Network client, feature "net" only. No TLS backend here: the caller's own client
+# brings one, or the "rustls" feature does.
 reqwest = { version = "0.13.5", default-features = false, features = [
-  "json",
   "stream",
   "charset",
   "http2",
-  "rustls",
 ], optional = true }
 futures-util = { version = "0.3.34", default-features = false, features = [
   "std",
@@ -35,6 +34,8 @@ futures-timer = { version = "3.0.3", features = ["wasm-bindgen"], optional = tru
 [features]
 default = []
 net = ["dep:reqwest", "dep:futures-util", "dep:futures-timer"]
+# reqwest's rustls with its default provider (aws-lc), for when nothing else picks TLS
+rustls = ["net", "reqwest/rustls"]
 
 [package.metadata.docs.rs]
 all-features = true
@@ -48,4 +49,4 @@ workspace = true
 
 [[example]]
 name = "watch"
-required-features = ["net"]
+required-features = ["rustls"]

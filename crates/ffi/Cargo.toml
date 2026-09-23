@@ -1,0 +1,20 @@
+[package]
+name = "pepito-ffi"
+description = "C ABI over pepito-client, for PHP FFI and any other language with an FFI."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+name = "pepito"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+pepito-client.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,13 @@
+/target
+tweets.json
+node_modules
+vendor
+# build artifacts, all reproducible with make
+js/dist
+js/src/wasm
+js/LICENSE
+php/lib/libpepito.*
+php/lib/pepito.h
+.pint.cache
+.phpunit.cache
+.DS_Store

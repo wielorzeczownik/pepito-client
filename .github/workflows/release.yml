@@ -1,0 +1,404 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'js/src/**'
+      - 'js/package.json'
+      - 'php/src/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'composer.json'
+      - 'cbindgen.toml'
+      - 'Makefile'
+
+permissions: {}
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  prepare-release:
+    name: Prepare release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    outputs:
+      released: ${{ steps.bump.outputs.released }}
+      version: ${{ steps.bump.outputs.version }}
+      tag: ${{ steps.bump.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Install cargo-edit
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: cargo-edit
+
+      - name: Determine next version (git-cliff)
+        id: cliff_bumped
+        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        with:
+          config: cliff.toml
+          args: --bumped-version
+        env:
+          OUTPUT: bumped-version.txt
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Detect user-facing changes (git-cliff)
+        id: cliff_userfacing
+        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        with:
+          config: cliff-release.toml
+          args: --unreleased --context
+        env:
+          OUTPUT: user-facing.json
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Count user-facing commits
+        id: userfacing
+        shell: bash
+        run: |
+          set -euo pipefail
+          count=$(jq '[.[].commits[]] | length' user-facing.json)
+          echo "User-facing commits since the last tag: $count"
+          echo "count=$count" >>"$GITHUB_OUTPUT"
+
+      - name: Bump project version
+        id: bump
+        if: ${{ steps.userfacing.outputs.count != '0' }}
+        shell: bash
+        env:
+          CLIFF_BUMPED_VERSION: ${{ steps.cliff_bumped.outputs.content }}
+        run: bash scripts/bump-version.sh
+
+      - name: Generate release notes (git-cliff)
+        if: ${{ steps.bump.outputs.released == 'true' }}
+        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        with:
+          config: cliff-release.toml
+          args: --unreleased --tag ${{ steps.bump.outputs.tag }}
+        env:
+          OUTPUT: release-notes.md
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Generate CHANGELOG.md (git-cliff)
+        if: ${{ steps.bump.outputs.released == 'true' }}
+        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        with:
+          config: cliff.toml
+          args: --tag ${{ steps.bump.outputs.tag }}
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Stage release files
+        if: ${{ steps.bump.outputs.released == 'true' && steps.bump.outputs.commit_changes == 'true' }}
+        run: git add Cargo.toml Cargo.lock js/package.json js/package-lock.json CHANGELOG.md
+
+      - name: Stage changelog
+        if: ${{ steps.bump.outputs.released == 'true' && steps.bump.outputs.commit_changes == 'false' }}
+        run: git add CHANGELOG.md
+
+      - name: Commit release (verified)
+        if: ${{ steps.bump.outputs.released == 'true' }}
+        uses: qoomon/actions--create-commit@7102b1a8b3cb8716dc70dbeb6d774c375d779d2f # v1.2.5
+        with:
+          message: 'chore(release): ${{ steps.bump.outputs.tag }} [skip ci]'
+          skip-empty: true
+
+      - name: Push commit
+        if: ${{ steps.bump.outputs.released == 'true' }}
+        run: git push
+
+      - name: Create tag
+        if: ${{ steps.bump.outputs.released == 'true' }}
+        uses: qoomon/actions--create-tag@bc18da911783e8dd24a7ae3ec1a95af941d29f60 # v1.0.0
+        with:
+          name: '${{ steps.bump.outputs.tag }}'
+          message: '${{ steps.bump.outputs.tag }}'
+
+      - name: Push tag
+        if: ${{ steps.bump.outputs.released == 'true' }}
+        run: git push origin 'refs/tags/${{ steps.bump.outputs.tag }}'
+
+      - name: Upload release notes
+        if: ${{ steps.bump.outputs.released == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-notes
+          path: release-notes.md
+
+  build-library:
+    name: Build library (${{ matrix.name }})
+    needs: prepare-release
+    if: ${{ needs.prepare-release.outputs.released == 'true' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x86_64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            artifact: libpepito.so
+          - name: linux-aarch64
+            os: ubuntu-22.04
+            target: aarch64-unknown-linux-gnu
+            artifact: libpepito.so
+            linker: gcc-aarch64-linux-gnu
+          - name: linux-x86_64-musl
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-musl
+            artifact: libpepito.so
+            musl: true
+          - name: linux-aarch64-musl
+            os: ubuntu-22.04
+            target: aarch64-unknown-linux-musl
+            artifact: libpepito.so
+            musl: true
+          - name: macos-universal
+            os: macos-15
+            target: universal
+            artifact: libpepito.dylib
+          - name: windows-x86_64
+            os: windows-2025
+            target: x86_64-pc-windows-msvc
+            artifact: pepito.dll
+          - name: windows-aarch64
+            os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            artifact: pepito.dll
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare-release.outputs.tag }}
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          targets: ${{ matrix.target == 'universal' && 'aarch64-apple-darwin,x86_64-apple-darwin' || matrix.target }}
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: ${{ matrix.name }}
+
+      - name: Install cbindgen
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: cbindgen
+
+      - name: Generate the C header
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd crates/ffi
+          cbindgen --config ../../cbindgen.toml --crate pepito-ffi --output ../../php/lib/pepito.h
+
+      - name: Install cross linker
+        if: ${{ matrix.linker }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.linker }}
+
+      - name: Install musl cross toolchain
+        if: ${{ matrix.musl }}
+        uses: taiki-e/setup-cross-toolchain-action@12b7ad4acfa95a1476779d6c06699b96ec1691f8 # v1.42.0
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build (macOS universal)
+        if: ${{ matrix.target == 'universal' }}
+        run: |
+          set -euo pipefail
+          cargo build --release --locked --target aarch64-apple-darwin -p pepito-ffi
+          cargo build --release --locked --target x86_64-apple-darwin -p pepito-ffi
+          mkdir -p dist
+          lipo -create -output "dist/${{ matrix.artifact }}" \
+            target/aarch64-apple-darwin/release/libpepito.dylib \
+            target/x86_64-apple-darwin/release/libpepito.dylib
+          file "dist/${{ matrix.artifact }}"
+
+      - name: Build
+        if: ${{ matrix.target != 'universal' }}
+        shell: bash
+        env:
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+        run: |
+          set -euo pipefail
+          cargo build --release --locked --target "${{ matrix.target }}" -p pepito-ffi
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/${{ matrix.artifact }}" dist/
+
+      - name: Package
+        shell: bash
+        env:
+          NAME: ${{ matrix.name }}
+        run: |
+          set -euo pipefail
+          cp php/lib/pepito.h dist/
+          tar -C dist -czf "pepito-${NAME}.tar.gz" "${{ matrix.artifact }}" pepito.h
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: library-${{ matrix.name }}
+          path: pepito-${{ matrix.name }}.tar.gz
+
+  publish-crate:
+    name: Publish to crates.io
+    needs: prepare-release
+    if: ${{ needs.prepare-release.outputs.released == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare-release.outputs.tag }}
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - name: Publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: cargo publish --locked -p pepito-client
+
+  publish-npm:
+    name: Publish to npm
+    needs: prepare-release
+    if: ${{ needs.prepare-release.outputs.released == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare-release.outputs.tag }}
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: wasm-bindgen-cli@0.2.128
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: js/package-lock.json
+
+      - name: Build wasm and the package
+        run: make js
+
+      - name: Publish to npm
+        working-directory: js
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public
+
+      - name: Configure npm for GitHub Packages
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          registry-url: https://npm.pkg.github.com
+          scope: '@wielorzeczownik'
+
+      - name: Publish to GitHub Packages
+        working-directory: js
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm publish
+
+  publish-release:
+    name: Publish GitHub release
+    needs: [prepare-release, build-library, publish-crate, publish-npm]
+    if: ${{ needs.prepare-release.outputs.released == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: release
+      url: https://github.com/${{ github.repository }}/releases/tag/${{ needs.prepare-release.outputs.tag }}
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download library artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: library-*
+          merge-multiple: true
+          path: dist
+
+      - name: Download release notes
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-notes
+          path: .
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*.tar.gz
+
+      - name: Compute SHA-256 checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum ./*.tar.gz >SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ needs.prepare-release.outputs.tag }}
+          name: ${{ needs.prepare-release.outputs.tag }}
+          body_path: release-notes.md
+          files: dist/*

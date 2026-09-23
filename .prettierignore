@@ -1,0 +1,11 @@
+# Build outputs, all reproducible with make
+target
+js/dist
+js/src/wasm
+node_modules
+vendor
+
+# Owned by their tools, which rewrite the formatting on every command
+composer.json
+composer.lock
+js/package-lock.json

@@ -1,0 +1,331 @@
+name: Validate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+      js: ${{ steps.filter.outputs.js }}
+      php: ${{ steps.filter.outputs.php }}
+      contracts: ${{ steps.filter.outputs.contracts }}
+      deps: ${{ steps.filter.outputs.deps }}
+      markdown: ${{ steps.filter.outputs.markdown }}
+      format: ${{ steps.filter.outputs.format }}
+      workflows: ${{ steps.filter.outputs.workflows }}
+    steps:
+      - name: Filter changed paths
+        id: filter
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
+        with:
+          filters: |
+            rust: &rust
+              - '.github/workflows/validate.yml'
+              - 'crates/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'rustfmt.toml'
+              - 'cbindgen.toml'
+            js:
+              - *rust
+              - 'js/**'
+            php:
+              - *rust
+              - 'php/**'
+              - 'composer.json'
+              - 'composer.lock'
+              - 'pint.json'
+            contracts:
+              - *rust
+              - 'js/src/pepito.ts'
+              - 'php/src/Client.php'
+              - 'js/package.json'
+              - 'Makefile'
+            deps:
+              - '.github/workflows/validate.yml'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            markdown:
+              - '.github/workflows/validate.yml'
+              - '**/*.md'
+            workflows:
+              - '.github/workflows/**'
+            format:
+              - '.github/workflows/validate.yml'
+              - '.prettierrc'
+              - '.prettierignore'
+              - '**/*.json'
+              - '**/*.md'
+              - '**/*.yml'
+              - '**/*.yaml'
+
+  cargo-test:
+    name: Cargo test
+    needs: changes
+    if: ${{ needs.changes.outputs.rust == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - name: Cargo test
+        run: cargo test --workspace --locked
+
+  lint:
+    name: Lint (clippy + rustfmt)
+    needs: changes
+    if: ${{ needs.changes.outputs.rust == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      - name: Format check
+        run: cargo fmt --all --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+
+  contracts:
+    name: Version and URL drift
+    needs: changes
+    if: ${{ needs.changes.outputs.contracts == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The endpoints and the version are restated per binding; these targets
+      # are what makes restating them safe.
+      - name: Check drift
+        run: make version urls
+
+  js:
+    name: JS (eslint + prettier + tsc + vitest)
+    needs: changes
+    if: ${{ needs.changes.outputs.js == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      # Must match wasm-bindgen in crates/wasm/Cargo.toml down to the patch,
+      # or the glue refuses to load the module it was generated for.
+      - name: Install wasm-bindgen-cli
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: wasm-bindgen-cli@0.2.128
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: js/package-lock.json
+
+      - name: Build wasm
+        run: make wasm
+
+      - name: Install dependencies
+        working-directory: js
+        run: npm ci
+
+      - name: Lint
+        working-directory: js
+        run: npm run lint
+
+      - name: Typecheck
+        working-directory: js
+        run: npm run typecheck
+
+      - name: Test
+        working-directory: js
+        run: npm test
+
+  php:
+    name: PHP (pint + tests)
+    needs: changes
+    if: ${{ needs.changes.outputs.php == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4360b52568e2003a75bf9bc1d59f33a8e3fc893c # stable
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+
+      # ffi.enable defaults to "preload", which refuses a runtime FFI::cdef.
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.2'
+          extensions: ffi, json, curl
+          ini-values: ffi.enable=1
+          coverage: none
+
+      - name: Install cbindgen
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: cbindgen
+
+      # php/lib/pepito.h is not committed, generated fresh here and by the
+      # installer plugin's downloaded release tarball, never checked in.
+      - name: Generate the C header
+        run: make header
+
+      - name: Build the native library
+        run: |
+          cargo build --release --locked -p pepito-ffi
+          cp target/release/libpepito.so php/lib/
+
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress
+
+      - name: Validate composer.json
+        run: composer validate --no-check-publish
+
+      - name: Pint
+        run: vendor/bin/pint --test
+
+      - name: Test
+        run: vendor/bin/phpunit
+
+  cargo-audit:
+    name: Cargo audit
+    needs: changes
+    if: ${{ needs.changes.outputs.deps == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@e67fa11c4b9316fa714ddf0abed07a0c3143b95b # v2.87.4
+        with:
+          tool: cargo-audit
+
+      - name: Cargo audit
+        shell: bash
+        run: |
+          set -uo pipefail
+          if cargo audit --color never 2>&1 | tee audit.log; then
+            exit 0
+          fi
+          echo "::warning title=cargo audit::Advisories found - see the job summary. Not blocking this pull request."
+          {
+            echo "### cargo audit findings"
+            echo
+            echo '```text'
+            cat audit.log
+            echo '```'
+          } >>"$GITHUB_STEP_SUMMARY"
+
+  actionlint:
+    name: Lint workflows (actionlint)
+    needs: changes
+    if: ${{ needs.changes.outputs.workflows == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Lint workflows
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+        with:
+          # renovate: datasource=github-releases depName=rhysd/actionlint
+          version: 1.7.12
+          shellcheck: true
+
+  prettier:
+    name: Formatting (Prettier)
+    needs: changes
+    if: ${{ needs.changes.outputs.format == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Format check
+        run: npx --yes prettier@3.9.8 --check .
+
+  markdownlint:
+    name: Markdown lint
+    needs: changes
+    if: ${{ needs.changes.outputs.markdown == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Lint Markdown
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
+        with:
+          globs: |
+            **/*.md
+            !CHANGELOG.md

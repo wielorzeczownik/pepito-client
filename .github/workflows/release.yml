@@ -333,6 +333,10 @@ jobs:
           cache: npm
           cache-dependency-path: js/package-lock.json
 
+      - name: Install dependencies
+        working-directory: js
+        run: npm ci
+
       - name: Build wasm and the package
         run: make js
 

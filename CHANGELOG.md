@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2](https://github.com/wielorzeczownik/pepito-client/compare/v0.1.1...v0.1.2) - 2026-09-23
+
+### Bug Fixes
+
+- Recognize v-prefixed tags and ./-prefixed checksums in the installer ([5d20a5f](https://github.com/wielorzeczownik/pepito-client/commit/5d20a5fc0fac093cac6c08eeb8c723685968da10))
+
+### CI/CD
+
+- Drop the ./ prefix from SHA256SUMS filenames ([c67a2af](https://github.com/wielorzeczownik/pepito-client/commit/c67a2af1512edb571c7786a12e6cdb255f827b68))
+- Switch npm and crates.io publishing to OIDC trusted publishing ([7868e67](https://github.com/wielorzeczownik/pepito-client/commit/7868e673859e667d29d4d36819354cf6f8f4487c))
+
 ## [0.1.1](https://github.com/wielorzeczownik/pepito-client/compare/v0.1.0...v0.1.1) - 2026-09-23
 
 ### Bug Fixes

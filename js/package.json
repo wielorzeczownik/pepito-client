@@ -1,6 +1,6 @@
 {
   "name": "@wielorzeczownik/pepito-client",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Pepito API client: SSE events, state, cache and historical statistics. Rust core compiled to wasm.",
   "license": "MIT",
   "type": "module",

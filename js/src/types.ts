@@ -61,7 +61,21 @@ export interface PepitoEventMap {
   error: CustomEvent<unknown>;
 }
 
+export interface PepitoOptions {
+  /**
+   * Your own fetch. Defaults to the global `fetch`.
+   */
+  fetch?: typeof fetch;
+}
+
 export interface WatchOptions {
   url?: string;
+  /**
+   * Seconds of silence before the connection counts as hung. Default 45.
+   */
+  idleTimeout?: number;
+  /**
+   * Seconds the doubling wait between reconnects stops at. Default 60.
+   */
   maxBackoff?: number;
 }

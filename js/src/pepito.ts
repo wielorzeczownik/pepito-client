@@ -5,6 +5,7 @@ import {
 } from './errors.js';
 import type {
   PepitoEventMap,
+  PepitoOptions,
   Sighting,
   Stats,
   Status,
@@ -26,6 +27,7 @@ export {
 export type {
   Outing,
   PepitoEventMap,
+  PepitoOptions,
   Sighting,
   Stats,
   Status,
@@ -33,11 +35,6 @@ export type {
   WatchOptions,
   Way,
 } from './types.js';
-
-/**
- * Silence longer than one heartbeat means the connection hung.
- */
-const IDLE_TIMEOUT_MS = 45_000;
 
 const wasmModule = { loaded: false };
 
@@ -86,9 +83,12 @@ export class Pepito extends EventTarget {
 
   #tracker: Tracker | undefined;
   #abort: AbortController | undefined;
+  #fetch: typeof fetch;
 
-  constructor(snapshot?: string | object) {
+  constructor(snapshot?: string | object, options: PepitoOptions = {}) {
     super();
+    // Wrapped, since the browser's fetch throws when called on anything but window.
+    this.#fetch = options.fetch ?? ((input, request) => fetch(input, request));
     if (!wasmModule.loaded) {
       throw new NotInitializedError('await init() first');
     }
@@ -133,15 +133,16 @@ export class Pepito extends EventTarget {
    */
   async #readStream(
     url: string,
+    idleMs: number,
     stop: AbortSignal,
     onOpen: () => void
   ): Promise<void> {
     const connection = new AbortController();
     const onStop = (): void => connection.abort();
     stop.addEventListener('abort', onStop, { once: true });
-    let watchdog = setTimeout(() => connection.abort(), IDLE_TIMEOUT_MS);
+    let watchdog = setTimeout(() => connection.abort(), idleMs);
     try {
-      const response = await fetch(url, {
+      const response = await this.#fetch(url, {
         signal: connection.signal,
         headers: { accept: 'text/event-stream' },
       });
@@ -162,7 +163,7 @@ export class Pepito extends EventTarget {
           break;
         }
         clearTimeout(watchdog);
-        watchdog = setTimeout(() => connection.abort(), IDLE_TIMEOUT_MS);
+        watchdog = setTimeout(() => connection.abort(), idleMs);
         this.feed(decoder.decode(value, { stream: true }));
       }
     } finally {
@@ -205,7 +206,12 @@ export class Pepito extends EventTarget {
    * One REST shot, so the cache does not start out empty.
    */
   async refresh(): Promise<Update | null> {
-    const response = await fetch(REST_URL);
+    const response = await this.#fetch(REST_URL, {
+      headers: { accept: 'application/json' },
+    });
+    if (!response.ok) {
+      throw new StreamError(`HTTP ${response.status}`, response.status);
+    }
     const body = await response.text();
     const update = this.#live.feedRest(body) as Update | null;
     if (update) {
@@ -239,14 +245,18 @@ export class Pepito extends EventTarget {
    * Follows the live stream, reconnecting and watching the heartbeat.
    * It does not finish until you call `stop()`.
    */
-  async watch({ url = SSE_URL, maxBackoff = 60 }: WatchOptions = {}) {
+  async watch({
+    url = SSE_URL,
+    idleTimeout = 45,
+    maxBackoff = 60,
+  }: WatchOptions = {}) {
     const outer = new AbortController();
     this.#abort = outer;
     let backoff = 1;
 
     while (!outer.signal.aborted) {
       try {
-        await this.#readStream(url, outer.signal, () => {
+        await this.#readStream(url, idleTimeout * 1000, outer.signal, () => {
           backoff = 1;
         });
       } catch (error) {

@@ -19,10 +19,11 @@ export class NotInitializedError extends PepitoError {}
 export class TrackerClosedError extends PepitoError {}
 
 /**
- * The live stream could not be opened or stayed broken.
+ * The live stream or the REST call answered with an error, or the stream
+ * stayed broken.
  *
- * This one arrives through the `error` event rather than as a throw, because
- * `watch()` keeps reconnecting instead of giving up.
+ * From `watch()` this one arrives through the `error` event rather than as a
+ * throw, because `watch()` keeps reconnecting instead of giving up.
  */
 export class StreamError extends PepitoError {
   readonly status: number | undefined;

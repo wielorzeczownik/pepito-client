@@ -27,8 +27,22 @@ p.addEventListener('change', (e) =>
   localStorage.setItem('pepito', p.snapshot())
 );
 
+p.addEventListener('error', (e) => console.warn('reconnecting', e.detail));
+
 p.watch(); // fetch + reconnect + heartbeat watchdog
+// p.watch({ url, idleTimeout: 45, maxBackoff: 60 }); the same knobs as in PHP and Rust
 // p.stop(); p.close();
+```
+
+Your own `fetch`
+
+```js
+import { fetch, ProxyAgent } from 'undici';
+
+const proxy = new ProxyAgent('http://127.0.0.1:8080');
+const p = new Pepito(snapshot, {
+  fetch: (url, init) => fetch(url, { ...init, dispatcher: proxy }),
+});
 ```
 
 ## Archive

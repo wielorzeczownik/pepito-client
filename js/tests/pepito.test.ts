@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { init, Pepito, SSE_URL } from '../src/pepito.js';
+import { init, Pepito, REST_URL, SSE_URL } from '../src/pepito.js';
 
 beforeAll(async () => {
   await init();
@@ -90,6 +90,30 @@ describe('the cache', () => {
     pepito.close();
 
     expect(() => pepito.snapshot()).toThrow(/closed/);
+  });
+});
+
+describe('your own fetch', () => {
+  it('is what refresh() asks, and a bad status throws', async () => {
+    const asked: string[] = [];
+    const answers = [
+      new Response('{"event":"pepito","type":"in","time":1725715521}'),
+      new Response('', { status: 503 }),
+    ];
+    const pepito = new Pepito(undefined, {
+      fetch: (input) => {
+        asked.push(new Request(input).url);
+        return Promise.resolve(answers.shift() as Response);
+      },
+    });
+
+    await pepito.refresh();
+    expect(asked).toEqual([REST_URL]);
+    expect(pepito.state.state).toBe('home');
+
+    await expect(pepito.refresh()).rejects.toMatchObject({ status: 503 });
+    expect(pepito.state.state).toBe('home');
+    pepito.close();
   });
 });
 

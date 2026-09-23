@@ -5,6 +5,18 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0](https://github.com/wielorzeczownik/pepito-client/compare/v0.1.2...v1.0.0) - 2026-09-23
+
+### Features
+
+- Take your own fetch, add idleTimeout, check refresh() status ([0e8aa00](https://github.com/wielorzeczownik/pepito-client/commit/0e8aa0088a0bdfc98d3dba5ef46fe2827b4d0a66))
+- Add WatchOptions and log reconnects in net::watch ([98ffbcd](https://github.com/wielorzeczownik/pepito-client/commit/98ffbcd20e9b7a4f7d34c48b40e4fad367abb84e))
+- Take the caller's reqwest client in net, stop forcing a TLS backend ([28367ee](https://github.com/wielorzeczownik/pepito-client/commit/28367ee645a2255ba954e6f9401bc7b911401f97))
+
+### CI/CD
+
+- Pass -- to sha256sum to satisfy shellcheck SC2035 ([28a6446](https://github.com/wielorzeczownik/pepito-client/commit/28a6446757a4255394531e5abbfabe29b2ac0b0e))
+
 ## [0.1.2](https://github.com/wielorzeczownik/pepito-client/compare/v0.1.1...v0.1.2) - 2026-09-23
 
 ### Bug Fixes

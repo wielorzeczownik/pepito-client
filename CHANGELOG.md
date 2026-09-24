@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0](https://github.com/wielorzeczownik/pepito-client/compare/v2.0.0...v3.0.0) - 2026-09-24
+
+### Features
+
+- Plain PHP core by default, FFI as opt-in through withFfi() (#7) ([f1df728](https://github.com/wielorzeczownik/pepito-client/commit/f1df7284ad737c076e7a6715488a0391bdbdf885))
+
 ## [2.0.0](https://github.com/wielorzeczownik/pepito-client/compare/v1.0.0...v2.0.0) - 2026-09-24
 
 ### Features

@@ -4,7 +4,11 @@ Thank you for considering a contribution. This document covers everything you ne
 
 ## Overview
 
-[Pepito API](https://github.com/Clement87/Pepito-API) client with one Rust core, usable as a crate, as an npm package (wasm), and from PHP (FFI). See [README.md](README.md) for the shape of the repo.
+[Pepito API](https://github.com/Clement87/Pepito-API) client for Rust (crate), JS/TS (npm) and PHP (Composer). The npm and Composer packages run a plain TS and a plain PHP port by default, and the Rust core as an opt-in backend (wasm, FFI). See [README.md](README.md) for the shape of the repo.
+
+### One behavior, three implementations
+
+The tracker and the archive statistics exist three times: `crates/core/src/`, `js/src/core.ts` and `php/src/Tracker.php` + `php/src/History.php`. A change in behavior (parsing, dedup, state, `status()`, stats, snapshot format) has to land in all three in the same PR. The parity tests (`js/tests/pepito.test.ts`, `php/tests/BackendParityTest.php`) feed the same input to a port and to the Rust core and fail on any difference, so extend their fixtures along with the change.
 
 ## Project structure
 
@@ -12,9 +16,9 @@ Thank you for considering a contribution. This document covers everything you ne
 .
 ├── crates/core/     no-IO core: state, cache, dedup, heartbeat, archive stats   -> crates.io
 ├── crates/ffi/      C ABI, JSON in / JSON out                                  -> PHP
-├── crates/wasm/     wasm-bindgen, JS objects with no JSON round trip           -> npm
-├── js/              transport: fetch, reconnect, EventTarget, TS types
-├── php/src/         FFI, PHP 8.2+, PSR-4
+├── crates/wasm/     wasm-bindgen, JS objects with no JSON round trip           -> npm /wasm
+├── js/src/          core.ts (plain TS port, default), pepito.ts (transport, types), wasm.ts (opt-in)
+├── php/src/         Tracker + History (plain PHP port, default), FfiTracker (opt-in); PHP 8.2+, PSR-4
 ├── php/lib/         pepito.h generated from crates/ffi + the built library
 └── scripts/
     ├── bump-version.sh     determines and applies the next release version from git-cliff output
@@ -25,12 +29,16 @@ Thank you for considering a contribution. This document covers everything you ne
 
 ```bash
 git clone https://github.com/wielorzeczownik/pepito-client.git
-cd pepito
+cd pepito-client
 cargo install cbindgen
 cargo install wasm-bindgen-cli --version 0.2.128   # must match crates/wasm/Cargo.toml down to the patch
 composer install
 cargo test --workspace --locked
+make wasm    # the wasm build for js/, needed by the JS parity tests
+make dylib   # libpepito for php/, needed by the PHP parity tests
 ```
+
+Without `make wasm` / `make dylib` the default JS and PHP backends still build and test, and the parity tests are skipped. CI always builds both, so the parity tests always run there.
 
 ## Running checks locally
 
@@ -46,15 +54,16 @@ cargo test --workspace --locked
 make version
 make urls
 
-# JS (from js/)
+# JS (from js/, after make wasm)
 npm ci
 npm run lint
 npm run typecheck
 npm test
 
-# PHP (from repo root, after composer install)
+# PHP (from repo root, after composer install and make dylib)
 vendor/bin/pint --test
 vendor/bin/phpunit
+php -d ffi.enable=0 vendor/bin/phpunit   # the default backend must not need FFI
 
 # Formatting
 npx prettier --check .
@@ -103,6 +112,7 @@ Open an [issue](https://github.com/wielorzeczownik/pepito-client/issues) and inc
 - What you expected
 - What actually happened
 - Which binding (Rust, JS, PHP) and version
+- For JS and PHP, which backend: the default one, or wasm / FFI
 
 > For security issues, read [SECURITY.md](SECURITY.md) before opening a public issue.
 

@@ -9,14 +9,21 @@ export class PepitoError extends Error {
 }
 
 /**
- * A `Pepito` was built before `await init()` resolved.
+ * The wasm build was used before `await init()` from
+ * `@wielorzeczownik/pepito-client/wasm` resolved.
  */
 export class NotInitializedError extends PepitoError {}
 
 /**
- * The tracker was used after `close()` freed its wasm memory.
+ * The tracker was used after `close()`.
  */
 export class TrackerClosedError extends PepitoError {}
+
+/**
+ * The archive handed to `historyStats()` or `historyParse()` is not a JSON
+ * array of tweets.
+ */
+export class InvalidArchiveError extends PepitoError {}
 
 /**
  * The live stream or the REST call answered with an error, or the stream

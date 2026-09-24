@@ -17,10 +17,10 @@ export type Update =
 
 export interface Status {
   state: 'home' | 'away' | 'unknown';
-  since: number | null;
-  last: Sighting | null;
-  age: number | null;
-  heartbeat_age: number | null;
+  since: number | undefined;
+  last: Sighting | undefined;
+  age: number | undefined;
+  heartbeat_age: number | undefined;
   healthy: boolean;
   count_in: number;
   count_out: number;
@@ -36,14 +36,14 @@ export interface Stats {
   total: number;
   ins: number;
   outs: number;
-  first: number | null;
-  last: number | null;
+  first: number | undefined;
+  last: number | undefined;
   outings: number;
   unpaired: number;
   avg_outing_secs: number;
   median_outing_secs: number;
-  longest: Outing | null;
-  shortest: Outing | null;
+  longest: Outing | undefined;
+  shortest: Outing | undefined;
   by_hour_out: number[];
   by_hour_in: number[];
   by_weekday_out: number[];

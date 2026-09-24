@@ -7,12 +7,13 @@
 use serde::Serialize;
 use wasm_bindgen::prelude::*;
 
-/// `json_compatible` is required here, not cosmetic: the default serializer
+/// Maps as objects is required here, not cosmetic: the default serializer
 /// hands back Rust maps as a JS `Map`, and `Update` carries `#[serde(flatten)]`,
 /// so it would arrive as a `Map` and `update.kind` would read `undefined`.
+/// `None` stays `undefined` rather than `null`, the same as the plain TS core.
 fn to_js<T: Serialize>(value: &T) -> Result<JsValue, JsValue> {
   value
-    .serialize(&serde_wasm_bindgen::Serializer::json_compatible())
+    .serialize(&serde_wasm_bindgen::Serializer::new().serialize_maps_as_objects(true))
     .map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
@@ -51,7 +52,7 @@ impl Tracker {
     to_js(&self.0.feed_chunk(chunk))
   }
 
-  /// Feeds the REST last-status response. Returns one event or `null`.
+  /// Feeds the REST last-status response. Returns one event or `undefined`.
   ///
   /// # Errors
   ///

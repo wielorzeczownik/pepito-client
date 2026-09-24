@@ -1,8 +1,5 @@
-import {
-  NotInitializedError,
-  StreamError,
-  TrackerClosedError,
-} from './errors.js';
+import * as core from './core.js';
+import { StreamError, TrackerClosedError } from './errors.js';
 import type {
   PepitoEventMap,
   PepitoOptions,
@@ -12,13 +9,9 @@ import type {
   Update,
   WatchOptions,
 } from './types.js';
-import wasmInit, {
-  historyParse,
-  historyStats,
-  Tracker,
-} from './wasm/pepito.js';
 
 export {
+  InvalidArchiveError,
   NotInitializedError,
   PepitoError,
   StreamError,
@@ -36,41 +29,42 @@ export type {
   Way,
 } from './types.js';
 
-const wasmModule = { loaded: false };
-
 export const SSE_URL = 'https://api.thecatdoor.com/sse/v1/events';
 export const REST_URL = 'https://api.thecatdoor.com/rest/v1/last-status';
 export const ARCHIVE_URL =
   'https://raw.githubusercontent.com/Clement87/Pepito-data/main/tweets.json';
 
 /**
- * Loads the wasm module. It has to finish before the first `Pepito` is built.
+ * What a backend has to provide: the plain TS port in `core.ts` by default,
+ * the wasm build of the Rust core from `/wasm`.
  */
-export async function init(source?: Uint8Array | URL): Promise<void> {
-  if (wasmModule.loaded) {
-    return;
-  }
-  let input: Uint8Array | URL =
-    source ?? new URL('wasm/pepito_bg.wasm', import.meta.url);
-  if (input instanceof URL && input.protocol === 'file:') {
-    // fetch cannot do file://, so on Node we read from disk.
-    const { readFile } = await import('node:fs/promises');
-    input = new Uint8Array(await readFile(input));
-  }
-  await wasmInit({ module_or_path: input });
-  wasmModule.loaded = true;
+export interface Backend {
+  Tracker: new (snapshot?: string) => {
+    feed(chunk: string): Update[];
+    feedRest(json: string): Update | undefined;
+    readonly state: Status;
+    isStale(maxAge: number): boolean;
+    snapshot(): string;
+    free(): void;
+  };
+  historyStats(json: string): Stats;
+  historyParse(json: string): Sighting[];
 }
+
+type Tracker = InstanceType<Backend['Tracker']>;
 
 /**
  * Events: `in`, `out`, `change`, `heartbeat`, `update`, `error`.
  * The payload sits in `event.detail`.
  */
 export class Pepito extends EventTarget {
+  protected static backend: Backend = core;
+
   /**
    * Statistics from the archive. See {@link ARCHIVE_URL} for where to get it.
    */
   static historyStats(json: string): Stats {
-    return historyStats(json) as Stats;
+    return this.backend.historyStats(json);
   }
 
   /**
@@ -78,7 +72,7 @@ export class Pepito extends EventTarget {
    * Large, tens of thousands of entries.
    */
   static historyParse(json: string): Sighting[] {
-    return historyParse(json) as Sighting[];
+    return this.backend.historyParse(json);
   }
 
   #tracker: Tracker | undefined;
@@ -89,17 +83,14 @@ export class Pepito extends EventTarget {
     super();
     // Wrapped, since the browser's fetch throws when called on anything but window.
     this.#fetch = options.fetch ?? ((input, request) => fetch(input, request));
-    if (!wasmModule.loaded) {
-      throw new NotInitializedError('await init() first');
-    }
     const json =
       typeof snapshot === 'object' ? JSON.stringify(snapshot) : snapshot;
-    this.#tracker = new Tracker(json);
+    this.#tracker = new new.target.backend.Tracker(json);
   }
 
   /**
    * Throws something readable instead of blowing up on a pointer that
-   * `close()` already freed.
+   * `close()` already freed (wasm build).
    */
   get #live(): Tracker {
     if (this.#tracker === undefined) {
@@ -195,7 +186,7 @@ export class Pepito extends EventTarget {
    * Feeds a slice of the stream, including one cut mid-line.
    */
   feed(chunk: string): Update[] {
-    const updates = this.#live.feed(chunk) as Update[];
+    const updates = this.#live.feed(chunk);
     for (const update of updates) {
       this.#emit(update);
     }
@@ -205,7 +196,7 @@ export class Pepito extends EventTarget {
   /**
    * One REST shot, so the cache does not start out empty.
    */
-  async refresh(): Promise<Update | null> {
+  async refresh(): Promise<Update | undefined> {
     const response = await this.#fetch(REST_URL, {
       headers: { accept: 'application/json' },
     });
@@ -213,7 +204,7 @@ export class Pepito extends EventTarget {
       throw new StreamError(`HTTP ${response.status}`, response.status);
     }
     const body = await response.text();
-    const update = this.#live.feedRest(body) as Update | null;
+    const update = this.#live.feedRest(body);
     if (update) {
       this.#emit(update);
     }
@@ -224,7 +215,7 @@ export class Pepito extends EventTarget {
    * State, cache age and heartbeat health in one object.
    */
   get state(): Status {
-    return this.#live.state as Status;
+    return this.#live.state;
   }
 
   /**
@@ -277,7 +268,8 @@ export class Pepito extends EventTarget {
   }
 
   /**
-   * Frees the wasm memory. Without it the tracker lives until the process ends.
+   * Stops `watch()` and, on the wasm build, frees the wasm memory, which
+   * otherwise lives until the process ends.
    */
   close(): void {
     this.stop();

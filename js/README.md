@@ -6,16 +6,15 @@
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript"/>
 </p>
 
-[Pepito API](https://github.com/Clement87/Pepito-API) client: a Rust core compiled to wasm (wasm-bindgen), with transport (fetch, reconnect, `EventTarget`) written in TS.
+[Pepito API](https://github.com/Clement87/Pepito-API) client in plain TypeScript, no WebAssembly needed. The Rust core compiled to wasm is an explicit opt-in, see [Wasm](#wasm).
 
 ```sh
 npm install @wielorzeczownik/pepito-client
 ```
 
 ```js
-import { init, Pepito } from '@wielorzeczownik/pepito-client';
+import { Pepito } from '@wielorzeczownik/pepito-client';
 
-await init();
 const p = new Pepito(localStorage.getItem('pepito') ?? undefined);
 
 await p.refresh();
@@ -52,7 +51,18 @@ const stats = Pepito.historyStats(json);
 // total, outings, avg_outing_secs, median_outing_secs, by_hour_out/by_hour_in/by_weekday_out
 ```
 
-`Pepito.historyStats(json)` processes a 5 MB archive in about 40 ms.
+## Wasm
+
+The same API backed by the Rust core compiled to wasm, for raw speed on large archives. It has to be loaded with `await init()` first. There is no fallback if the wasm fails to load you get an error, not the TS version running quietly instead.
+
+```js
+import { init, Pepito } from '@wielorzeczownik/pepito-client/wasm';
+
+await init();
+const stats = Pepito.historyStats(json);
+```
+
+Snapshots have the same format in both, so either one restores what the other saved.
 
 More on the architecture of the whole repo (crates + npm + composer together):
 see the [README](https://github.com/wielorzeczownik/pepito-client#readme) at the repo root.

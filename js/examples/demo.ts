@@ -5,11 +5,9 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { ARCHIVE_URL, init, Pepito } from '../dist/pepito.js';
+import { ARCHIVE_URL, Pepito } from '../dist/pepito.js';
 
 const cacheFile = path.join(tmpdir(), 'pepito.json');
-
-await init();
 
 let snapshot: string | undefined;
 try {

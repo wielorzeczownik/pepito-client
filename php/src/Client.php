@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Pepito;
 
 use FFI;
-use FFI\CData;
+use Pepito\Event\Sighting;
 use Pepito\Event\Update;
+use Pepito\Exception\InvalidArchiveException;
 use Pepito\Exception\LibraryNotFoundException;
 use Pepito\Exception\MissingStorageException;
 use Psr\Clock\ClockInterface;
@@ -19,7 +20,8 @@ use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * The Pepito API client: the same Rust core, loaded from libpepito through FFI.
+ * The Pepito API client, in plain PHP. `withFfi()` swaps in libpepito through
+ * FFI instead, with no fallback between the two.
  */
 final class Client implements LoggerAwareInterface
 {
@@ -29,10 +31,7 @@ final class Client implements LoggerAwareInterface
 
     public const ARCHIVE_URL = 'https://raw.githubusercontent.com/Clement87/Pepito-data/main/tweets.json';
 
-    private static ?FFI $ffi = null;
-
-    /** Pointer to the Rust tracker. */
-    private ?CData $tracker;
+    private Tracker|FfiTracker $tracker;
 
     /** PSR-18, used by `refresh()`. */
     private ?ClientInterface $http = null;
@@ -57,48 +56,32 @@ final class Client implements LoggerAwareInterface
 
     public function __construct(?string $snapshot = null)
     {
-        $ffi = self::lib();
-        $this->tracker = $snapshot === null || $snapshot === ''
-            ? $ffi->pepito_new()
-            : $ffi->pepito_restore($snapshot);
-    }
-
-    public function __destruct()
-    {
-        if ($this->tracker !== null) {
-            self::$ffi->pepito_drop($this->tracker);
-            $this->tracker = null;
-        }
+        $this->tracker = new Tracker($snapshot === '' ? null : $snapshot);
     }
 
     /**
-     * Loads libpepito once per process. The path can be forced by hand.
+     * The same client backed by libpepito through FFI, for raw speed. Needs
+     * the ffi extension and the library, and throws when either is missing
+     * rather than quietly running the plain PHP backend.
+     *
+     * @throws LibraryNotFoundException
+     */
+    public static function withFfi(?string $snapshot = null): self
+    {
+        $client = new self;
+        $client->tracker = new FfiTracker($snapshot === '' ? null : $snapshot);
+
+        return $client;
+    }
+
+    /**
+     * Loads libpepito once per process for `withFfi()`. The path can be forced by hand.
+     *
+     * @throws LibraryNotFoundException
      */
     public static function lib(?string $path = null): FFI
     {
-        if (self::$ffi !== null) {
-            return self::$ffi;
-        }
-        $lib = \dirname(__DIR__).'/lib';
-        $header = $lib.'/pepito.h';
-        if (! is_file($header)) {
-            throw new LibraryNotFoundException('php/lib/pepito.h is missing, generate it with: make header');
-        }
-        $cdef = (string) file_get_contents($header);
-        $candidates = $path !== null ? [$path] : [];
-        foreach (['dylib', 'so', 'dll'] as $ext) {
-            $candidates[] = $lib."/libpepito.$ext";
-            $candidates[] = $lib."/pepito.$ext";
-            $candidates[] = $lib."/../../target/release/libpepito.$ext";
-            $candidates[] = $lib."/../../target/release/pepito.$ext";
-        }
-        foreach ($candidates as $candidate) {
-            if (is_file($candidate)) {
-                return self::$ffi = FFI::cdef($cdef, $candidate);
-            }
-        }
-
-        throw new LibraryNotFoundException('libpepito not found, build it with: make dylib');
+        return FfiTracker::lib($path);
     }
 
     /**
@@ -151,17 +134,6 @@ final class Client implements LoggerAwareInterface
         $this->logger = $logger;
     }
 
-    /**
-     * Takes a string from Rust and frees that memory right away.
-     */
-    private static function take(CData $pointer): string
-    {
-        $text = FFI::string($pointer);
-        self::$ffi->pepito_free($pointer);
-
-        return $text;
-    }
-
     private function now(): int
     {
         return $this->clock !== null ? $this->clock->now()->getTimestamp() : time();
@@ -184,8 +156,7 @@ final class Client implements LoggerAwareInterface
      */
     public function feed(string $chunk): array
     {
-        $raw = json_decode(self::take(self::$ffi->pepito_feed($this->tracker, $chunk)), true);
-        $updates = array_map(Update::from(...), $raw);
+        $updates = array_map(Update::from(...), $this->tracker->feed($chunk));
         foreach ($updates as $update) {
             $this->dispatch($update);
         }
@@ -203,7 +174,7 @@ final class Client implements LoggerAwareInterface
         if ($body === null) {
             return null;
         }
-        $raw = json_decode(self::take(self::$ffi->pepito_feed_rest($this->tracker, $body)), true);
+        $raw = $this->tracker->feedRest($body);
         if ($raw === null) {
             return null;
         }
@@ -275,12 +246,12 @@ final class Client implements LoggerAwareInterface
      */
     public function state(): array
     {
-        return json_decode(self::take(self::$ffi->pepito_state($this->tracker, $this->now())), true);
+        return $this->tracker->status($this->now());
     }
 
     public function snapshot(): string
     {
-        return self::take(self::$ffi->pepito_snapshot($this->tracker));
+        return $this->tracker->snapshot();
     }
 
     /** Cache between requests, because every PHP request starts from nothing. */
@@ -297,12 +268,12 @@ final class Client implements LoggerAwareInterface
         file_put_contents($file, $this->snapshot(), LOCK_EX);
     }
 
-    /** Restores from a file. For PSR-16 use `restoreFromCache()`. */
-    public static function load(string $file): self
+    /** Restores from a file, through FFI with `$ffi`. For PSR-16 use `restoreFromCache()`. */
+    public static function load(string $file, bool $ffi = false): self
     {
-        $json = is_file($file) ? (string) file_get_contents($file) : '';
+        $json = is_file($file) ? (string) file_get_contents($file) : null;
 
-        return new self($json !== '' ? $json : null);
+        return $ffi ? self::withFfi($json) : new self($json);
     }
 
     /** Pulls a snapshot out of the PSR-16 cache into an existing client. */
@@ -315,8 +286,7 @@ final class Client implements LoggerAwareInterface
         if (! is_string($json) || $json === '') {
             return false;
         }
-        self::$ffi->pepito_drop($this->tracker);
-        $this->tracker = self::$ffi->pepito_restore($json);
+        $this->tracker = $this->tracker instanceof FfiTracker ? new FfiTracker($json) : new Tracker($json);
 
         return true;
     }
@@ -373,6 +343,7 @@ final class Client implements LoggerAwareInterface
 
     /**
      * Statistics from the archive, see self::ARCHIVE_URL for where to get it.
+     * `$ffi` computes them in libpepito instead, for raw speed.
      *
      * @return array{
      *     total: int,
@@ -390,25 +361,26 @@ final class Client implements LoggerAwareInterface
      *     by_hour_in: list<int>,
      *     by_weekday_out: list<int>,
      * }
+     *
+     * @throws InvalidArchiveException
      */
-    public static function historyStats(string $json): array
+    public static function historyStats(string $json, bool $ffi = false): array
     {
-        self::lib();
-
-        return json_decode(self::take(self::$ffi->pepito_history_stats($json)), true);
+        return $ffi ? FfiTracker::historyStats($json) : History::stats(History::parse($json));
     }
 
     /**
      * The archive as the same events as the live stream, see self::ARCHIVE_URL.
+     * The raw array of each one also carries the tweet under `text`.
      *
-     * @return list<Update>
+     * @return list<Sighting>
+     *
+     * @throws InvalidArchiveException
      */
-    public static function historyParse(string $json): array
+    public static function historyParse(string $json, bool $ffi = false): array
     {
-        self::lib();
+        $sightings = $ffi ? FfiTracker::historyParse($json) : History::parse($json);
 
-        $raw = json_decode(self::take(self::$ffi->pepito_history_parse($json)), true);
-
-        return array_map(Update::from(...), $raw);
+        return array_map(static fn (array $raw): Sighting => new Sighting(['kind' => 'sighting', ...$raw]), $sightings);
     }
 }

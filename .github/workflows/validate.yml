@@ -248,6 +248,9 @@ jobs:
       - name: Test
         run: vendor/bin/phpunit
 
+      - name: Test without FFI
+        run: php -d ffi.enable=0 vendor/bin/phpunit
+
   cargo-audit:
     name: Cargo audit
     needs: changes

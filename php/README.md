@@ -6,15 +6,11 @@
   <img src="https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP"/>
 </p>
 
-[Pepito API](https://github.com/Clement87/Pepito-API) client: a Rust core loaded through FFI. Requires PHP 8.2+ with the `ffi` and `curl` extensions.
+[Pepito API](https://github.com/Clement87/Pepito-API) client in plain PHP. Requires PHP 8.2+ with the `curl` extension, no FFI needed. The Rust core through FFI is an explicit opt-in, see [FFI](#ffi).
 
 ```sh
 composer require wielorzeczownik/pepito-client
 ```
-
-On install, the Composer plugin (`Pepito\Installer\LibraryInstallerPlugin`) downloads the prebuilt binary for your platform from the GitHub Release and verifies it by SHA-256, so you never need a Rust toolchain. Composer 2.2+ will ask on the first `require` whether to trust this plugin (`allow-plugins`). Without that consent the plugin will not run and you need to build manually, see below.
-
-This keeps `php/` self-contained, and it also works unpacked in `vendor/`, where no `target/` exists. C declarations are read from `php/lib/pepito.h`, which cbindgen generates from `crates/ffi` on every `make dylib`, which is what keeps the prototype from silently drifting away from the ABI. A hand-copied signature would drift with no error at all, and a mismatched ABI is UB.
 
 ```php
 require 'vendor/autoload.php';
@@ -71,6 +67,23 @@ $st = Pepito\Client::historyStats(file_get_contents('tweets.json'));
 ```
 
 Pairing outings: an outing is the last `out` before an `in`. Consecutive `out` events, which happen in the archive when a return got lost, count as `unpaired`.
+
+A file that is not an array of tweets throws `Pepito\Exception\InvalidArchiveException`.
+
+## FFI
+
+The same client backed by the Rust core through FFI, for raw speed on large archives. It needs the `ffi` extension (with `ffi.enable=1`) and the library. There is no fallback if either is missing you get a `LibraryNotFoundException`, not the plain PHP version running quietly instead.
+
+```php
+$pepito = Pepito\Client::withFfi($snapshot);          // or Client::load($cacheFile, ffi: true)
+$st = Pepito\Client::historyStats($json, ffi: true);
+```
+
+Snapshots have the same format in both, so either one restores what the other saved.
+
+On install, the Composer plugin (`Pepito\Installer\LibraryInstallerPlugin`) downloads the prebuilt binary for your platform from the GitHub Release and verifies it by SHA-256, so you never need a Rust toolchain. Composer 2.2+ will ask on the first `require` whether to trust this plugin (`allow-plugins`).
+
+This keeps `php/` self-contained, and it also works unpacked in `vendor/`, where no `target/` exists. C declarations are read from `php/lib/pepito.h`, which cbindgen generates from `crates/ffi` on every `make dylib`, which is what keeps the prototype from silently drifting away from the ABI. A hand-copied signature would drift with no error at all, and a mismatched ABI is UB.
 
 More on the architecture of the whole repo (crates + npm + composer together):
 see the [README](https://github.com/wielorzeczownik/pepito-client#readme) at the repo root.

@@ -1,7 +1,7 @@
 {
   "name": "@wielorzeczownik/pepito-client",
   "version": "1.0.0",
-  "description": "Pepito API client: SSE events, state, cache and historical statistics. Rust core compiled to wasm.",
+  "description": "Pepito API client: SSE events, state, cache and historical statistics. Plain TS, with the Rust core as opt-in wasm.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/pepito.js",
@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/pepito.d.ts",
       "default": "./dist/pepito.js"
+    },
+    "./wasm": {
+      "types": "./dist/wasm.d.ts",
+      "default": "./dist/wasm.js"
     },
     "./package.json": "./package.json"
   },

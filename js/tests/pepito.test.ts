@@ -1,12 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
-import { init, Pepito, REST_URL, SSE_URL } from '../src/pepito.js';
-
-beforeAll(async () => {
-  await init();
-});
+import { Pepito, REST_URL, SSE_URL } from '../src/pepito.js';
 
 describe('the live stream', () => {
   it('reassembles a stream split at a random point', () => {
@@ -124,6 +120,103 @@ describe('the core', () => {
 
   it('parses an empty archive into an array', () => {
     expect(Array.isArray(Pepito.historyParse('[]'))).toBe(true);
+  });
+
+  it('throws on an archive that is not one', () => {
+    expect(() => Pepito.historyStats('{')).toThrow(/archive|JSON/i);
+    expect(() => Pepito.historyStats('[{"way":"in"}]')).toThrow(/tweet 0/);
+  });
+});
+
+// The same fixtures as crates/core/src/lib.rs, which the TS port has to agree with.
+const TWEETS = `[
+  {"full_text":"Pepito est sorti (12:47:41)","way":"out","created_at":"Sun Nov 13 10:47:15 +0000 2011","media":""},
+  {"full_text":"Pepito est sorti (17:20:30)","way":"out","created_at":"Sun Nov 13 15:20:04 +0000 2011","media":""},
+  {"full_text":"Pepito est rentre (17:30:30)","way":"in","created_at":"Sun Nov 13 15:30:04 +0000 2011","media":"m.jpg"},
+  {"full_text":"broken","way":"sideways","created_at":"Sun Nov 13 15:30:04 +0000 2011","media":""},
+  {"full_text":"wrong weekday","way":"in","created_at":"Mon Nov 13 15:30:04 +0000 2011"},
+  {"full_text":"no such day","way":"in","created_at":"Wed Feb 30 15:30:04 +0000 2011"},
+  {"full_text":"offset","way":"in","created_at":"Sun Nov 13 17:30:04 +0200 2011"}
+]`;
+
+const STREAM = [
+  ': a comment\nevent: message\n',
+  'data: {"event":"heartbeat","time":100}\r\n',
+  'data: {"event":"pepito","type":"out","time":110,"img":"a.jpg"}\n',
+  'data: {"event":"pepito","type":"out","time":110,"img":"a.jpg"}\n',
+  'data: {"event":"pepito","type":"out","time":150,"img":null}\n',
+  'data:{"event":"pepi',
+  'to","type":"in","time":90}\n{"event":"heartbeat","time":50}\n',
+  'data: {"event":"pepito","type":"sideways","time":1}\ndata: {"event":"pepito","type":"in","time":1.5}\n',
+  'data: {"event":"pepito","type":"in","time":200,"img":7}\n',
+  'data: {"event":"pepito","type":"in","time":200}\ndata: {invalid json}\n',
+];
+
+describe('the TS port', () => {
+  it('pairs outings like the Rust core', () => {
+    const stats = Pepito.historyStats(TWEETS);
+
+    expect([stats.outs, stats.ins, stats.outings, stats.unpaired]).toEqual([
+      2, 2, 1, 1,
+    ]);
+    expect(stats.longest?.secs).toBe(600);
+    expect(stats.by_hour_out[10]).toBe(1);
+    expect(stats.by_weekday_out[0]).toBe(2);
+    expect(Pepito.historyParse(TWEETS)[0]?.time).toBe(1_321_181_235);
+  });
+});
+
+const isWasmBuilt = existsSync(
+  new URL('../src/wasm/pepito_bg.wasm', import.meta.url)
+);
+
+describe.skipIf(!isWasmBuilt)('the wasm build', () => {
+  it('agrees with the TS port on the stream, state and snapshot', async () => {
+    const wasm = await import('../src/wasm.js');
+    await wasm.init();
+    const pure = new Pepito();
+    const rust = new wasm.Pepito();
+
+    for (const chunk of STREAM) {
+      expect(pure.feed(chunk)).toEqual(rust.feed(chunk));
+      expect(pure.state).toEqual(rust.state);
+    }
+    expect(JSON.parse(pure.snapshot())).toEqual(JSON.parse(rust.snapshot()));
+    // Snapshots move between backends.
+    expect(new wasm.Pepito(pure.snapshot()).state).toEqual(pure.state);
+    expect(new Pepito(rust.snapshot()).state).toEqual(rust.state);
+    for (const garbage of ['', 'garbage', '{"count_in":-1,"count_out":0}']) {
+      expect(new Pepito(garbage).state).toEqual(new wasm.Pepito(garbage).state);
+    }
+    rust.close();
+  });
+
+  it('agrees with the TS port on the archive', async () => {
+    const wasm = await import('../src/wasm.js');
+    await wasm.init();
+
+    expect(Pepito.historyParse(TWEETS)).toEqual(
+      wasm.Pepito.historyParse(TWEETS)
+    );
+    expect(Pepito.historyStats(TWEETS)).toEqual(
+      wasm.Pepito.historyStats(TWEETS)
+    );
+    for (const broken of [
+      '{',
+      '[{"full_text":"","way":"in","created_at":"","media":null}]',
+    ]) {
+      expect(() => Pepito.historyStats(broken)).toThrow(
+        wasm.InvalidArchiveError
+      );
+      expect(() => wasm.Pepito.historyStats(broken)).toThrow(
+        wasm.InvalidArchiveError
+      );
+    }
+    if (!archive) {
+      return;
+    }
+    const json = readFileSync(archive, 'utf8');
+    expect(Pepito.historyStats(json)).toEqual(wasm.Pepito.historyStats(json));
   });
 });
 

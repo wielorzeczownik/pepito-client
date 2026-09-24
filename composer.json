@@ -41,7 +41,7 @@
     "require-dev": {
         "laravel/pint": "1.30.4",
         "nyholm/psr7": "1.8.2",
-        "phpunit/phpunit": "11.5.56"
+        "phpunit/phpunit": "13.3.4"
     },
     "suggest": {
         "psr/http-client-implementation": "Your own HTTP client for refresh(), through setHttpClient()",

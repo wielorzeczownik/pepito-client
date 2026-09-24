@@ -1,11 +1,31 @@
 {
     "name": "wielorzeczownik/pepito-client",
-    "description": "Pepito API client: SSE events, state, cache and historical statistics. Rust core loaded through FFI.",
+    "description": "Pepito API client: SSE events, state, cache and historical statistics. Plain PHP, with the Rust core as opt-in FFI.",
     "type": "composer-plugin",
     "license": "MIT",
+    "readme": "php/README.md",
+    "keywords": [
+        "pepito",
+        "sse",
+        "server-sent-events",
+        "cat",
+        "psr",
+        "ffi",
+        "rust"
+    ],
+    "homepage": "https://github.com/wielorzeczownik/pepito-client#readme",
+    "support": {
+        "issues": "https://github.com/wielorzeczownik/pepito-client/issues",
+        "source": "https://github.com/wielorzeczownik/pepito-client"
+    },
+    "authors": [
+        {
+            "name": "wielorzeczownik",
+            "homepage": "https://github.com/wielorzeczownik"
+        }
+    ],
     "require": {
         "php": ">=8.2",
-        "ext-ffi": "*",
         "ext-json": "*",
         "ext-curl": "*",
         "ext-phar": "*",
@@ -44,6 +64,7 @@
         "phpunit/phpunit": "11.5.56"
     },
     "suggest": {
+        "ext-ffi": "The Rust core through Client::withFfi(), for raw speed on large archives",
         "psr/http-client-implementation": "Your own HTTP client for refresh(), through setHttpClient()",
         "psr/simple-cache-implementation": "Snapshot cache instead of files, through setCache()",
         "psr/event-dispatcher-implementation": "Events from watch(), through setEventDispatcher()"

@@ -61,7 +61,7 @@
     "require-dev": {
         "laravel/pint": "1.30.4",
         "nyholm/psr7": "1.8.2",
-        "phpunit/phpunit": "11.5.56"
+        "phpunit/phpunit": "13.3.4"
     },
     "suggest": {
         "ext-ffi": "The Rust core through Client::withFfi(), for raw speed on large archives",

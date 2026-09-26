@@ -6,6 +6,8 @@
   "type": "module",
   "main": "./dist/pepito.js",
   "types": "./dist/pepito.d.ts",
+  "unpkg": "./dist/pepito.umd.js",
+  "jsdelivr": "./dist/pepito.umd.js",
   "exports": {
     ".": {
       "types": "./dist/pepito.d.ts",
@@ -44,7 +46,7 @@
   },
   "scripts": {
     "prepack": "node -e \"require('node:fs').copyFileSync('../LICENSE','LICENSE')\"",
-    "build": "tsc -p tsconfig.build.json && node scripts/copy-wasm.mjs",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-wasm.mjs && vite build -c vite.cdn.config.ts && vite build -c vite.cdn-wasm.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "example": "npm run build && node examples/demo.ts",
@@ -63,6 +65,7 @@
     "prettier": "3.9.8",
     "typescript": "6.0.3",
     "typescript-eslint": "8.70.1",
+    "vite": "8.3.1",
     "vitest": "5.0.1"
   },
   "author": "wielorzeczownik"

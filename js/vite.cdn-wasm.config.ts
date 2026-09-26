@@ -4,10 +4,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/wasm.ts',
-      name: 'PepitoWasm',
-      formats: ['es', 'umd'],
-      fileName: (format) =>
-        format === 'es' ? 'pepito-wasm.esm.js' : 'pepito-wasm.umd.js',
+      formats: ['es'],
+      fileName: () => 'pepito-wasm.esm.js',
     },
     outDir: 'dist',
     emptyOutDir: false,

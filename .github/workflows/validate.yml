@@ -160,7 +160,7 @@ jobs:
       # Must match wasm-bindgen in crates/wasm/Cargo.toml down to the patch,
       # or the glue refuses to load the module it was generated for.
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@76c2e6406e52637deed7160d77bded76bd83e06e # v2.87.14
+        uses: taiki-e/install-action@9114bf4d891761788c546334fd37538eae1bf8b3 # v2.87.16
         with:
           tool: wasm-bindgen-cli@0.2.128
 
@@ -222,7 +222,7 @@ jobs:
           coverage: none
 
       - name: Install cbindgen
-        uses: taiki-e/install-action@76c2e6406e52637deed7160d77bded76bd83e06e # v2.87.14
+        uses: taiki-e/install-action@9114bf4d891761788c546334fd37538eae1bf8b3 # v2.87.16
         with:
           tool: cbindgen
 
@@ -264,7 +264,7 @@ jobs:
           persist-credentials: false
 
       - name: Install cargo-audit
-        uses: taiki-e/install-action@76c2e6406e52637deed7160d77bded76bd83e06e # v2.87.14
+        uses: taiki-e/install-action@9114bf4d891761788c546334fd37538eae1bf8b3 # v2.87.16
         with:
           tool: cargo-audit
 

@@ -46,13 +46,13 @@ jobs:
         uses: dtolnay/rust-toolchain@6bed0761d98439e5a578e2877258200ad565ba87 # stable
 
       - name: Install cargo-edit
-        uses: taiki-e/install-action@76c2e6406e52637deed7160d77bded76bd83e06e # v2.87.14
+        uses: taiki-e/install-action@9114bf4d891761788c546334fd37538eae1bf8b3 # v2.87.16
         with:
           tool: cargo-edit
 
       - name: Determine next version (git-cliff)
         id: cliff_bumped
-        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
         with:
           config: cliff.toml
           args: --bumped-version
@@ -62,7 +62,7 @@ jobs:
 
       - name: Detect user-facing changes (git-cliff)
         id: cliff_userfacing
-        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
         with:
           config: cliff-release.toml
           args: --unreleased --context
@@ -89,7 +89,7 @@ jobs:
 
       - name: Generate release notes (git-cliff)
         if: ${{ steps.bump.outputs.released == 'true' }}
-        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
         with:
           config: cliff-release.toml
           args: --unreleased --tag ${{ steps.bump.outputs.tag }}
@@ -100,7 +100,7 @@ jobs:
 
       - name: Generate CHANGELOG.md (git-cliff)
         if: ${{ steps.bump.outputs.released == 'true' }}
-        uses: orhun/git-cliff-action@3d96a18cc4ec17e9dc69ddcc424ccafaf1f78ce2 # v4.9.0
+        uses: orhun/git-cliff-action@a9a95522b26fe6403f7bb24031f21fb573d0f5ff # v4.9.1
         with:
           config: cliff.toml
           args: --tag ${{ steps.bump.outputs.tag }}
@@ -206,7 +206,7 @@ jobs:
           key: ${{ matrix.name }}
 
       - name: Install cbindgen
-        uses: taiki-e/install-action@76c2e6406e52637deed7160d77bded76bd83e06e # v2.87.14
+        uses: taiki-e/install-action@9114bf4d891761788c546334fd37538eae1bf8b3 # v2.87.16
         with:
           tool: cbindgen
 
@@ -325,7 +325,7 @@ jobs:
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
       - name: Install wasm-bindgen-cli
-        uses: taiki-e/install-action@76c2e6406e52637deed7160d77bded76bd83e06e # v2.87.14
+        uses: taiki-e/install-action@9114bf4d891761788c546334fd37538eae1bf8b3 # v2.87.16
         with:
           tool: wasm-bindgen-cli@0.2.128
 

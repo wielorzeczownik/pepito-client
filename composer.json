@@ -59,7 +59,7 @@
         "class": "Pepito\\Installer\\LibraryInstallerPlugin"
     },
     "require-dev": {
-        "laravel/pint": "1.30.4",
+        "laravel/pint": "1.32.1",
         "nyholm/psr7": "1.8.2",
         "phpunit/phpunit": "11.5.56"
     },

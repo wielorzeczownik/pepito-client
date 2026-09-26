@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0](https://github.com/wielorzeczownik/pepito-client/compare/v3.0.0...v3.1.0) - 2026-09-26
+
+### Features
+
+- Bundle ESM/UMD builds for jsDelivr/unpkg via Vite (#11) ([412d8bd](https://github.com/wielorzeczownik/pepito-client/commit/412d8bd4a4fe3ff0adf215d192ee0f681ad1fc71))
+
+### Documentation
+
+- Describe the plain TS/PHP default and the opt-in Rust backends ([24a6e76](https://github.com/wielorzeczownik/pepito-client/commit/24a6e767571569f52bdafab3dcd76c8d5a3887fc))
+
+### Build System
+
+- Update dependency prettier to v3.9.9 (#10) ([e87af7d](https://github.com/wielorzeczownik/pepito-client/commit/e87af7df90bdf356b307d814e372b27aef98d944))
+- Inline sources into source maps, drop declaration maps (#8) ([c1d082b](https://github.com/wielorzeczownik/pepito-client/commit/c1d082b31539d47afab040d0f820b2433aec0366))
+
+### CI/CD
+
+- Update github actions (#1) ([0feafbf](https://github.com/wielorzeczownik/pepito-client/commit/0feafbfdfdce99ba1479d3a572850b8e798c7f04))
+
 ## [3.0.0](https://github.com/wielorzeczownik/pepito-client/compare/v2.0.0...v3.0.0) - 2026-09-24
 
 ### Features

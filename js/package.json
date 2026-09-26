@@ -52,7 +52,7 @@
     "example": "npm run build && node examples/demo.ts",
     "test:watch": "vitest",
     "lint": "eslint src tests scripts examples",
-    "fix": "eslint --fix src tests scripts examples"
+    "fix": "eslint --fix src tests scripts examples && prettier --write ."
   },
   "devDependencies": {
     "@types/node": "26.6.2",

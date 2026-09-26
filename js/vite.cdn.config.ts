@@ -6,7 +6,8 @@ export default defineConfig({
       entry: 'src/pepito.ts',
       name: 'Pepito',
       formats: ['es', 'umd'],
-      fileName: (format) => (format === 'es' ? 'pepito.esm.js' : 'pepito.umd.js'),
+      fileName: (format) =>
+        format === 'es' ? 'pepito.esm.js' : 'pepito.umd.js',
     },
     outDir: 'dist',
     emptyOutDir: false,

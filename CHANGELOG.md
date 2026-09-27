@@ -5,6 +5,17 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0](https://github.com/wielorzeczownik/pepito-client/compare/v3.1.0...v3.2.0) - 2026-09-27
+
+### Features
+
+- Add CommonJS build via Vite (#14) ([b8eb621](https://github.com/wielorzeczownik/pepito-client/commit/b8eb621f0df547707012b9acf25a7f366303abc1))
+
+### CI/CD
+
+- Update taiki-e/install-action action to v2.87.17 (#13) ([cecbfff](https://github.com/wielorzeczownik/pepito-client/commit/cecbfffbf7beb338b99baa3fc85b9a598b0166cc))
+- Update github actions (#9) ([07d3537](https://github.com/wielorzeczownik/pepito-client/commit/07d3537d28d779957ea7edb0d048bb6beb2b5121))
+
 ## [3.1.0](https://github.com/wielorzeczownik/pepito-client/compare/v3.0.0...v3.1.0) - 2026-09-26
 
 ### Features

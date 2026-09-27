@@ -14,6 +14,14 @@ export * from './pepito.js';
 
 const wasmModule = { loaded: false };
 
+// UMD build has no import.meta, so remember the script's URL while it loads
+// (currentScript is gone by the time init() runs).
+const script =
+  typeof document === 'undefined'
+    ? undefined
+    : (document.currentScript as HTMLScriptElement | null);
+const scriptUrl = script?.src;
+
 function ready(): void {
   if (!wasmModule.loaded) {
     throw new NotInitializedError('await init() first');
@@ -51,10 +59,12 @@ export async function init(source?: Uint8Array | URL): Promise<void> {
     return;
   }
   let input: Uint8Array | URL =
-    source ?? new URL('wasm/pepito_bg.wasm', import.meta.url);
+    source ?? new URL('wasm/pepito_bg.wasm', import.meta.url ?? scriptUrl);
   if (input instanceof URL && input.protocol === 'file:') {
-    // fetch cannot do file://, so on Node we read from disk.
-    const { readFile } = await import('node:fs/promises');
+    const nodeFs = 'node:fs/promises';
+    const { readFile } = (await import(
+      /* webpackIgnore: true */ /* @vite-ignore */ nodeFs
+    )) as typeof import('node:fs/promises');
     input = new Uint8Array(await readFile(input));
   }
   await wasmInit({ module_or_path: input });

@@ -73,6 +73,18 @@
     {
       "matchPackageNames": ["wasm-bindgen", "wasm-bindgen-cli"],
       "groupName": "wasm-bindgen"
+    },
+    {
+      "matchPackageNames": ["laravel/pint"],
+      "allowedVersions": "<1.32.0"
+    },
+    {
+      "matchPackageNames": ["phpunit/phpunit"],
+      "allowedVersions": "<13.0.0"
+    },
+    {
+      "matchPackageNames": ["typescript", "typescript-eslint"],
+      "groupName": "typescript"
     }
   ]
 }

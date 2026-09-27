@@ -11,11 +11,13 @@
   "exports": {
     ".": {
       "types": "./dist/pepito.d.ts",
-      "default": "./dist/pepito.js"
+      "import": "./dist/pepito.js",
+      "require": "./dist/pepito.cjs"
     },
     "./wasm": {
       "types": "./dist/wasm.d.ts",
-      "default": "./dist/wasm.js"
+      "import": "./dist/wasm.js",
+      "require": "./dist/pepito-wasm.cjs"
     },
     "./package.json": "./package.json"
   },
@@ -46,7 +48,7 @@
   },
   "scripts": {
     "prepack": "node -e \"require('node:fs').copyFileSync('../LICENSE','LICENSE')\"",
-    "build": "tsc -p tsconfig.build.json && node scripts/copy-wasm.mjs && vite build -c vite.cdn.config.ts && vite build -c vite.cdn-wasm.config.ts",
+    "build": "tsc -p tsconfig.build.json && node scripts/copy-wasm.mjs && vite build -c vite.cdn.config.ts && vite build -c vite.cdn-wasm.config.ts && vite build -c vite.cjs.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "example": "npm run build && node examples/demo.ts",

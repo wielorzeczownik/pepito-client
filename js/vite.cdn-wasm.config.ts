@@ -4,14 +4,21 @@ export default defineConfig({
   build: {
     lib: {
       entry: 'src/wasm.ts',
-      formats: ['es'],
-      fileName: () => 'pepito-wasm.esm.js',
+      name: 'PepitoWasm',
+      formats: ['es', 'umd'],
+      fileName: (format) =>
+        format === 'es' ? 'pepito-wasm.esm.js' : 'pepito-wasm.umd.js',
     },
     outDir: 'dist',
     emptyOutDir: false,
     sourcemap: true,
     rollupOptions: {
       external: ['node:fs/promises'],
+      onwarn(warning, warn) {
+        if (warning.code !== 'EMPTY_IMPORT_META') {
+          warn(warning);
+        }
+      },
     },
   },
 });

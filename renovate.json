@@ -76,15 +76,15 @@
     },
     {
       "matchPackageNames": ["laravel/pint"],
-      "allowedVersions": "<1.32.0"
+      "allowedVersions": "<1.30.5"
     },
     {
       "matchPackageNames": ["phpunit/phpunit"],
-      "allowedVersions": "<13.0.0"
+      "allowedVersions": "<12.0.0"
     },
     {
-      "matchPackageNames": ["typescript", "typescript-eslint"],
-      "groupName": "typescript"
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<6.1.0"
     }
   ]
 }

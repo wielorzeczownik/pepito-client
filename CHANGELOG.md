@@ -5,6 +5,16 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.2](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.1...v3.2.2) - 2026-09-29
+
+### Build System
+
+- Update dependency vitest to v5.0.2 (#21) ([b77facb](https://github.com/wielorzeczownik/pepito-client/commit/b77facbe2919e837e5633cb5d5fe7f30df5eda4c))
+
+### Dependencies
+
+- Update rust crate wasm-bindgen to v0.2.129 (#22) ([b30b500](https://github.com/wielorzeczownik/pepito-client/commit/b30b500d1b11efd5031e85b8eca5d1c116970433))
+
 ## [3.2.1](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.0...v3.2.1) - 2026-09-29
 
 ### Bug Fixes

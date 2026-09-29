@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.1](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.0...v3.2.1) - 2026-09-29
+
+### Bug Fixes
+
+- Correct php/typescript version caps (#19) ([4fb6433](https://github.com/wielorzeczownik/pepito-client/commit/4fb64336cfb7bb1333fbac5afad8ae130d512e77))
+
+### Build System
+
+- Update dependency @types/node to v26.6.3 (#20) ([5bfbbb4](https://github.com/wielorzeczownik/pepito-client/commit/5bfbbb41ef2dd48aa99c7bbc201275218ba56358))
+
+### Miscellaneous
+
+- Cap incompatible pint/phpunit, group typescript (#16) ([e1ae405](https://github.com/wielorzeczownik/pepito-client/commit/e1ae40552572d66bbc3dad2eb2867b905159aac9))
+- Enable vulnerabilityAlerts (#15) ([e448307](https://github.com/wielorzeczownik/pepito-client/commit/e4483075e8db1c3f0d3a200bfb539300aec64e90))
+
 ## [3.2.0](https://github.com/wielorzeczownik/pepito-client/compare/v3.1.0...v3.2.0) - 2026-09-27
 
 ### Features

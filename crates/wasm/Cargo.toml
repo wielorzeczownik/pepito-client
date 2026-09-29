@@ -15,7 +15,7 @@ crate-type = ["cdylib", "rlib"]
 pepito-client.workspace = true
 serde.workspace = true
 
-wasm-bindgen = "=0.2.128"
+wasm-bindgen = "=0.2.129"
 serde-wasm-bindgen = "0.6.5"
 js-sys = "0.3.105"
 

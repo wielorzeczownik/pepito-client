@@ -5,6 +5,30 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.3](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.2...v3.2.3) - 2026-10-08
+
+### Bug Fixes
+
+- Resolve npm audit advisories ([daad16e](https://github.com/wielorzeczownik/pepito-client/commit/daad16ea5d41dc17bf7f7bf4351b12099e86ed33))
+
+### Build System
+
+- Update dependency eslint to v10.12.0 (#31) ([7df7d54](https://github.com/wielorzeczownik/pepito-client/commit/7df7d54b0857a96c7e630c78cd60f4db6cccadc0))
+- Update dependency @types/node to v26.6.4 (#30) ([e7136fc](https://github.com/wielorzeczownik/pepito-client/commit/e7136fc677c3d352ad7f7291a3380f357030234f))
+- Update dependency vite to v8.3.2 (#29) ([09c4ed8](https://github.com/wielorzeczownik/pepito-client/commit/09c4ed833797e8725c119bd3f0e39733107fa453))
+- Update dependency vitest to v5.0.3 (#28) ([e5ed49d](https://github.com/wielorzeczownik/pepito-client/commit/e5ed49dc0aec3242cee87587f41c0a205a3b7316))
+- Update dependency typescript-eslint to v8.71.0 (#27) ([9dc1b5d](https://github.com/wielorzeczownik/pepito-client/commit/9dc1b5d1b7033e574d49a6846cb50184c53e46a0))
+- Update dependency eslint-plugin-sonarjs to v4.2.2 (#25) ([f32d22a](https://github.com/wielorzeczownik/pepito-client/commit/f32d22aa11fc933d01a5850e27e1318bd78419ce))
+
+### CI/CD
+
+- Update taiki-e/install-action action to v2.87.19 (#24) ([c3f2f33](https://github.com/wielorzeczownik/pepito-client/commit/c3f2f331a56cb16a457f5d1384d466902c687cc4))
+- Update taiki-e/install-action action to v2.87.18 (#23) ([181d5c2](https://github.com/wielorzeczownik/pepito-client/commit/181d5c28ff25d30a00f86a08ac47d364aeca4131))
+
+### Dependencies
+
+- Update dependency phpunit/phpunit to v11.5.57 (#34) ([c4aeb93](https://github.com/wielorzeczownik/pepito-client/commit/c4aeb93a7d1d5ec3302ccfa2db4a5a576f7b9676))
+
 ## [3.2.2](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.1...v3.2.2) - 2026-09-29
 
 ### Build System

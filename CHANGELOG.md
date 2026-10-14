@@ -5,6 +5,21 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.5](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.4...v3.2.5) - 2026-10-14
+
+### Build System
+
+- Update dependency eslint-plugin-unicorn to v77 (#33) ([b014b63](https://github.com/wielorzeczownik/pepito-client/commit/b014b638402efbcf198c3d290ab220801aeff3fa))
+- Update dependency prettier to v3.9.10 (#39) ([afcef8e](https://github.com/wielorzeczownik/pepito-client/commit/afcef8e7131595b1c8fd3fdc4129fc61e2ffd648))
+
+### CI/CD
+
+- Update github actions (#26) ([4c333bd](https://github.com/wielorzeczownik/pepito-client/commit/4c333bd9a3efea1e0728a4eac35233380cd271ca))
+
+### Dependencies
+
+- Update rust crate tokio to v1.53.2 (#32) ([c08b93c](https://github.com/wielorzeczownik/pepito-client/commit/c08b93c4442ff1ad9c688f2ccf5a83885f1657f1))
+
 ## [3.2.4](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.3...v3.2.4) - 2026-10-14
 
 ### Build System

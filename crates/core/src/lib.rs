@@ -62,7 +62,10 @@ mod tests {
   #[test]
   fn chunks_may_split_lines_anywhere() {
     let mut tracker = Tracker::new();
-    assert_eq!(tracker.feed_chunk("data: {\"event\":\"pepi"), Vec::<Update>::new());
+    assert_eq!(
+      tracker.feed_chunk("data: {\"event\":\"pepi"),
+      Vec::<Update>::new()
+    );
     let updates = tracker.feed_chunk(
       "to\",\"type\":\"in\",\"time\":5}\n\ndata: {\"event\":\"heartbeat\",\"time\":6}\n",
     );

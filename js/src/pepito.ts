@@ -35,9 +35,9 @@ export const ARCHIVE_URL =
   'https://raw.githubusercontent.com/Clement87/Pepito-data/main/tweets.json';
 
 /**
- * What a backend has to provide: the plain TS port in `core.ts` by default,
- * the wasm build of the Rust core from `/wasm`.
- */
+What a backend has to provide: the plain TS port in `core.ts` by default,
+the wasm build of the Rust core from `/wasm`.
+*/
 export interface Backend {
   Tracker: new (snapshot?: string) => {
     feed(chunk: string): Update[];
@@ -54,23 +54,23 @@ export interface Backend {
 type Tracker = InstanceType<Backend['Tracker']>;
 
 /**
- * Events: `in`, `out`, `change`, `heartbeat`, `update`, `error`.
- * The payload sits in `event.detail`.
- */
+Events: `in`, `out`, `change`, `heartbeat`, `update`, `error`.
+The payload sits in `event.detail`.
+*/
 export class Pepito extends EventTarget {
   protected static backend: Backend = core;
 
   /**
-   * Statistics from the archive. See {@link ARCHIVE_URL} for where to get it.
-   */
+  Statistics from the archive. See {@link ARCHIVE_URL} for where to get it.
+  */
   static historyStats(json: string): Stats {
     return this.backend.historyStats(json);
   }
 
   /**
-   * The archive as the same events as the live stream, see {@link ARCHIVE_URL}.
-   * Large, tens of thousands of entries.
-   */
+  The archive as the same events as the live stream, see {@link ARCHIVE_URL}.
+  Large, tens of thousands of entries.
+  */
   static historyParse(json: string): Sighting[] {
     return this.backend.historyParse(json);
   }
@@ -89,9 +89,9 @@ export class Pepito extends EventTarget {
   }
 
   /**
-   * Throws something readable instead of blowing up on a pointer that
-   * `close()` already freed (wasm build).
-   */
+  Throws something readable instead of blowing up on a pointer that
+  `close()` already freed (wasm build).
+  */
   get #live(): Tracker {
     if (this.#tracker === undefined) {
       throw new TrackerClosedError('this tracker was closed by close()');
@@ -119,9 +119,9 @@ export class Pepito extends EventTarget {
   }
 
   /**
-   * Reads one connection until it ends. `onOpen` fires once the response
-   * arrives, which is what lets the caller reset its backoff.
-   */
+  Reads one connection until it ends. `onOpen` fires once the response
+  arrives, which is what lets the caller reset its backoff.
+  */
   async #readStream(
     url: string,
     idleMs: number,
@@ -183,8 +183,8 @@ export class Pepito extends EventTarget {
   }
 
   /**
-   * Feeds a slice of the stream, including one cut mid-line.
-   */
+  Feeds a slice of the stream, including one cut mid-line.
+  */
   feed(chunk: string): Update[] {
     const updates = this.#live.feed(chunk);
     for (const update of updates) {
@@ -194,8 +194,8 @@ export class Pepito extends EventTarget {
   }
 
   /**
-   * One REST shot, so the cache does not start out empty.
-   */
+  One REST shot, so the cache does not start out empty.
+  */
   async refresh(): Promise<Update | undefined> {
     const response = await this.#fetch(REST_URL, {
       headers: { accept: 'application/json' },
@@ -212,30 +212,30 @@ export class Pepito extends EventTarget {
   }
 
   /**
-   * State, cache age and heartbeat health in one object.
-   */
+  State, cache age and heartbeat health in one object.
+  */
   get state(): Status {
     return this.#live.state;
   }
 
   /**
-   * Whether the cache is older than `maxAge` seconds.
-   */
+  Whether the cache is older than `maxAge` seconds.
+  */
   isStale(maxAge: number): boolean {
     return this.#live.isStale(maxAge);
   }
 
   /**
-   * Cache to store wherever you like.
-   */
+  Cache to store wherever you like.
+  */
   snapshot(): string {
     return this.#live.snapshot();
   }
 
   /**
-   * Follows the live stream, reconnecting and watching the heartbeat.
-   * It does not finish until you call `stop()`.
-   */
+  Follows the live stream, reconnecting and watching the heartbeat.
+  It does not finish until you call `stop()`.
+  */
   async watch({
     url = SSE_URL,
     idleTimeout = 45,
@@ -268,9 +268,9 @@ export class Pepito extends EventTarget {
   }
 
   /**
-   * Stops `watch()` and, on the wasm build, frees the wasm memory, which
-   * otherwise lives until the process ends.
-   */
+  Stops `watch()` and, on the wasm build, frees the wasm memory, which
+  otherwise lives until the process ends.
+  */
   close(): void {
     this.stop();
     this.#tracker?.free();

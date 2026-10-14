@@ -2,9 +2,9 @@ import { InvalidArchiveError } from './errors.js';
 import type { Outing, Sighting, Stats, Status, Update, Way } from './types.js';
 
 /**
- * With no heartbeat for this many seconds the connection counts as dead
- * (the server beats roughly every 10 s).
- */
+With no heartbeat for this many seconds the connection counts as dead
+(the server beats roughly every 10 s).
+*/
 const HEARTBEAT_TIMEOUT = 30;
 
 const U32_MAX = 4_294_967_295;
@@ -77,8 +77,8 @@ const isCount = (value: unknown): value is number =>
   isInt(value) && value >= 0 && value <= U32_MAX;
 
 /**
- * State, cache, dedup and heartbeat.
- */
+State, cache, dedup and heartbeat.
+*/
 export class Tracker {
   #last: Sighting | undefined;
   #lastHeartbeat: number | undefined;
@@ -90,8 +90,8 @@ export class Tracker {
   #buffer = '';
 
   /**
-   * A snapshot that does not parse means a fresh tracker.
-   */
+  A snapshot that does not parse means a fresh tracker.
+  */
   constructor(snapshot?: string | null) {
     if (snapshot === undefined || snapshot === null) {
       return;
@@ -160,8 +160,8 @@ export class Tracker {
   }
 
   /**
-   * Feeds any slice of the SSE stream, including one cut mid-line.
-   */
+  Feeds any slice of the SSE stream, including one cut mid-line.
+  */
   feed(chunk: string): Update[] {
     this.#buffer += chunk;
     const updates: Update[] = [];
@@ -178,16 +178,16 @@ export class Tracker {
   }
 
   /**
-   * Feeds the REST last-status response. Returns one event or `undefined`.
-   */
+  Feeds the REST last-status response. Returns one event or `undefined`.
+  */
   feedRest(json: string): Update | undefined {
     const wire = parseWire(json);
     return wire ? this.#apply(wire) : undefined;
   }
 
   /**
-   * State, cache age and heartbeat health, timed by the local clock.
-   */
+  State, cache age and heartbeat health, timed by the local clock.
+  */
   get state(): Status {
     return this.status(Math.trunc(Date.now() / 1000));
   }
@@ -213,16 +213,16 @@ export class Tracker {
   }
 
   /**
-   * Whether a REST refresh is worth it.
-   */
+  Whether a REST refresh is worth it.
+  */
   isStale(maxAge: number): boolean {
     const { age } = this.state;
     return age === undefined || age > maxAge;
   }
 
   /**
-   * The same JSON as the wasm build writes, so either backend can restore it.
-   */
+  The same JSON as the wasm build writes, so either backend can restore it.
+  */
   snapshot(): string {
     return JSON.stringify({
       last: this.#last,
@@ -233,8 +233,8 @@ export class Tracker {
   }
 
   /**
-   * Nothing to free here, kept so both backends look the same.
-   */
+  Nothing to free here, kept so both backends look the same.
+  */
   free(): void {}
 }
 
@@ -257,18 +257,18 @@ const TWITTER_TIME =
   /^(\w{3}) (\w{3}) (\d{1,2}) (\d{1,2}):(\d{1,2}):(\d{1,2}) ([+-])(\d{2}):?(\d{2}) (\d{4})$/;
 
 /**
- * Twitter's own format, `Sun Nov 13 10:47:15 +0000 2011`
- */
+Twitter's own format, `Sun Nov 13 10:47:15 +0000 2011`
+*/
 export function parseTwitterTime(text: string): number | undefined {
   const match = TWITTER_TIME.exec(text);
   if (!match) {
     return undefined;
   }
-  const [, weekday, monthName, ...rest] = match;
+  const [, weekday, monthName = '', ...rest] = match;
   const [day, hour, minute, second, sign, offH, offM, year] = rest.map(
     (part, index) => (index === 4 ? part : Number(part))
   ) as [number, number, number, number, string, number, number, number];
-  const month = MONTHS.indexOf(monthName ?? '');
+  const month = MONTHS.indexOf(monthName);
   if (month === -1 || hour > 23 || minute > 59 || second > 59 || offM > 59) {
     return undefined;
   }
@@ -285,8 +285,8 @@ export function parseTwitterTime(text: string): number | undefined {
 }
 
 /**
- * The tweet archive as sightings, sorted by time.
- */
+The tweet archive as sightings, sorted by time.
+*/
 export function historyParse(json: string): Sighting[] {
   let tweets: unknown;
   try {
@@ -321,9 +321,9 @@ export function historyParse(json: string): Sighting[] {
 }
 
 /**
- * Pairs every `in` with the last `out` before it. Two `out` events in a row
- * overwrite each other, because they mean a return went missing.
- */
+Pairs every `in` with the last `out` before it. Two `out` events in a row
+overwrite each other, because they mean a return went missing.
+*/
 export function stats(sightings: Sighting[]): Stats {
   const result: Stats = {
     total: sightings.length,

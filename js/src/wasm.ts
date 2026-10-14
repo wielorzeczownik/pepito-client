@@ -29,8 +29,8 @@ function ready(): void {
 }
 
 /**
- * wasm-bindgen throws the Rust error as a bare string.
- */
+wasm-bindgen throws the Rust error as a bare string.
+*/
 function archive<T>(parse: () => unknown): T {
   ready();
   try {
@@ -52,8 +52,8 @@ const wasm: Backend = {
 };
 
 /**
- * Loads the wasm module. It has to finish before the first `Pepito` is built.
- */
+Loads the wasm module. It has to finish before the first `Pepito` is built.
+*/
 export async function init(source?: Uint8Array | URL): Promise<void> {
   if (wasmModule.loaded) {
     return;
@@ -72,8 +72,8 @@ export async function init(source?: Uint8Array | URL): Promise<void> {
 }
 
 /**
- * `Pepito` backed by the wasm build. `close()` frees its memory.
- */
+`Pepito` backed by the wasm build. `close()` frees its memory.
+*/
 export class Pepito extends PurePepito {
   protected static override backend = wasm;
 }

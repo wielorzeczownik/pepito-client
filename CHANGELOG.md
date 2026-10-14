@@ -5,6 +5,23 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.4](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.3...v3.2.4) - 2026-10-14
+
+### Build System
+
+- Update dependency @types/node to v26.6.5 (#38) ([f7f2d0f](https://github.com/wielorzeczownik/pepito-client/commit/f7f2d0f957ef5a2da5cf9b3ac6bbd3d30efba344))
+- Update dependency vite to v8.3.4 (#37) ([045ab3f](https://github.com/wielorzeczownik/pepito-client/commit/045ab3f7b73e34934aa4df7344e3b573d1311c98))
+- Update dependency vite to v8.3.3 (#36) ([d35509d](https://github.com/wielorzeczownik/pepito-client/commit/d35509d278da3d6aac0d0cf1fc8410c3f153383b))
+- Update dependency typescript-eslint to v8.71.1 (#35) ([e4d2b80](https://github.com/wielorzeczownik/pepito-client/commit/e4d2b80307b7078fcf5384f136b842d9df73352c))
+
+### CI/CD
+
+- Update artifact actions (#41) ([b3c4506](https://github.com/wielorzeczownik/pepito-client/commit/b3c4506519e2ab0ec5e08be0734ba2fa1f816306))
+
+### Dependencies
+
+- Update rust crate serde_json to v1.0.154 (#40) ([5e351c0](https://github.com/wielorzeczownik/pepito-client/commit/5e351c013327c8bf8f6cc70e89873b063de05a8c))
+
 ## [3.2.3](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.2...v3.2.3) - 2026-10-08
 
 ### Bug Fixes

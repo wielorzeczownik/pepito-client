@@ -3,8 +3,8 @@ export type Way = 'in' | 'out';
 export interface Sighting {
   way: Way;
   /**
-   * Unix timestamp in seconds, UTC.
-   */
+  Unix timestamp in seconds, UTC.
+  */
   time: number;
   img?: string;
   text?: string;
@@ -50,8 +50,8 @@ export interface Stats {
 }
 
 /**
- * Events dispatched by [`Pepito`].
- */
+Events dispatched by [`Pepito`].
+*/
 export interface PepitoEventMap {
   update: CustomEvent<Update>;
   heartbeat: CustomEvent<Update>;
@@ -63,19 +63,19 @@ export interface PepitoEventMap {
 
 export interface PepitoOptions {
   /**
-   * Your own fetch. Defaults to the global `fetch`.
-   */
+  Your own fetch. Defaults to the global `fetch`.
+  */
   fetch?: typeof fetch;
 }
 
 export interface WatchOptions {
   url?: string;
   /**
-   * Seconds of silence before the connection counts as hung. Default 45.
-   */
+  Seconds of silence before the connection counts as hung. Default 45.
+  */
   idleTimeout?: number;
   /**
-   * Seconds the doubling wait between reconnects stops at. Default 60.
-   */
+  Seconds the doubling wait between reconnects stops at. Default 60.
+  */
   maxBackoff?: number;
 }

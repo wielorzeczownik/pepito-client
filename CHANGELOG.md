@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.6](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.5...v3.2.6) - 2026-10-17
+
+### Build System
+
+- Update dependency eslint-plugin-unicorn to v78 (#46) ([c54d1ed](https://github.com/wielorzeczownik/pepito-client/commit/c54d1ed491c0b6a8b8db9fd2b28c28c881361e82))
+- Update dependency typescript-eslint to v8.71.2 (#45) ([d7b60dc](https://github.com/wielorzeczownik/pepito-client/commit/d7b60dc29b7cba13988211482fa79d344db63671))
+- Update dependency vitest to v5.0.4 (#44) ([e21d144](https://github.com/wielorzeczownik/pepito-client/commit/e21d1443829686eb0d8da6d8f31b394eff204746))
+
+### CI/CD
+
+- Update github actions (#42) ([c5cc26d](https://github.com/wielorzeczownik/pepito-client/commit/c5cc26dc878b64bacb2cb84d7ddc7889b37e28f9))
+
+### Dependencies
+
+- Update rust crate tokio to v1.53.3 (#47) ([c1c0a03](https://github.com/wielorzeczownik/pepito-client/commit/c1c0a031ff97f963939931a8ac5883e0e1a46225))
+
 ## [3.2.5](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.4...v3.2.5) - 2026-10-14
 
 ### Build System

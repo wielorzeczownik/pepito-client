@@ -4,55 +4,33 @@ set -uo pipefail
 
 : "${GITHUB_OUTPUT:?GITHUB_OUTPUT is required}"
 
-report="${REPORT_FILE:-audit-report.txt}"
-: >"$report"
-
-emit() {
-  echo "$1=$2" >>"$GITHUB_OUTPUT"
-}
-
-emit_report() {
-  {
-    echo 'report<<AUDIT_REPORT_EOF'
-    if [[ -s "$report" ]]; then
-      cat "$report"
-    else
-      echo 'no advisories found'
-    fi
-    echo 'AUDIT_REPORT_EOF'
-  } >>"$GITHUB_OUTPUT"
-}
-
+dir="$(cd "$(dirname "$0")" && pwd)"
 unresolved=false
-
-echo "### cargo audit" >>"$report"
-if ! cargo audit --color never >>"$report" 2>&1; then
-  unresolved=true
-fi
-
-echo >>"$report"
-echo "### composer audit" >>"$report"
-if ! composer audit --no-interaction >>"$report" 2>&1; then
-  unresolved=true
-fi
-
-echo >>"$report"
-echo "### npm audit (js/)" >>"$report"
 changed=false
-if ! (cd js && npm audit) >>"$report" 2>&1; then
-  echo "Advisories found in js/, attempting npm audit fix" >>"$report"
-  (cd js && npm audit fix) >>"$report" 2>&1 || echo "npm audit fix could not resolve everything" >>"$report"
+
+cargo_report=$(bash "$dir/cargo-audit-report.sh") || unresolved=true
+composer_report=$(bash "$dir/composer-audit-report.sh") || unresolved=true
+
+if ! npm_report=$(cd js && bash "$dir/npm-audit-report.sh"); then
+  echo "Advisories found in js/, attempting npm audit fix"
+  (cd js && npm audit fix) || echo "npm audit fix could not resolve everything"
 
   if ! git diff --quiet -- js/package-lock.json; then
     changed=true
   fi
 
-  if ! (cd js && npm audit) >>"$report" 2>&1; then
-    unresolved=true
-  fi
+  npm_report=$(cd js && bash "$dir/npm-audit-report.sh") || unresolved=true
 fi
 
-emit changed "$changed"
-emit unresolved "$unresolved"
-emit_report
+report=$(printf '%s\n\n%s\n\n%s\n' "$cargo_report" "$composer_report" "$npm_report")
+
+{
+  echo "changed=$changed"
+  echo "unresolved=$unresolved"
+  echo 'report<<AUDIT_REPORT_EOF'
+  echo "$report"
+  echo 'AUDIT_REPORT_EOF'
+} >>"$GITHUB_OUTPUT"
+
+echo "$report"
 echo "lockfile changed: $changed, unresolved: $unresolved"

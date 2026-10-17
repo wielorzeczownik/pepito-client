@@ -11,10 +11,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  changes:
-    name: Detect changes
+  checks:
+    name: Checks
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 15
     permissions:
       contents: read
       pull-requests: read
@@ -22,12 +22,12 @@ jobs:
       rust: ${{ steps.filter.outputs.rust }}
       js: ${{ steps.filter.outputs.js }}
       php: ${{ steps.filter.outputs.php }}
-      contracts: ${{ steps.filter.outputs.contracts }}
-      deps: ${{ steps.filter.outputs.deps }}
-      markdown: ${{ steps.filter.outputs.markdown }}
-      format: ${{ steps.filter.outputs.format }}
-      workflows: ${{ steps.filter.outputs.workflows }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Filter changed paths
         id: filter
         uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
@@ -59,6 +59,7 @@ jobs:
               - '.github/workflows/validate.yml'
               - 'Cargo.toml'
               - 'Cargo.lock'
+              - 'scripts/cargo-audit-report.sh'
             markdown:
               - '.github/workflows/validate.yml'
               - '**/*.md'
@@ -72,11 +73,64 @@ jobs:
               - '**/*.md'
               - '**/*.yml'
               - '**/*.yaml'
+            shell:
+              - '.github/workflows/validate.yml'
+              - 'scripts/**'
 
-  cargo-test:
-    name: Cargo test
-    needs: changes
-    if: ${{ needs.changes.outputs.rust == 'true' }}
+      - name: Install cargo-audit
+        id: install
+        if: ${{ steps.filter.outputs.deps == 'true' }}
+        uses: taiki-e/install-action@ab6895351a88b908e96a4697860d4ffea5e57dbe # v2.87.27
+        with:
+          tool: cargo-audit
+
+      - name: Cargo audit
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && steps.filter.outputs.deps == 'true' }}
+        shell: bash
+        run: bash scripts/cargo-audit-report.sh >>"$GITHUB_STEP_SUMMARY" || echo "::warning title=cargo audit::Advisories found or audit failed, see the job summary. Not blocking this pull request."
+
+      - name: Check version and URL drift
+        if: ${{ !cancelled() && steps.filter.outputs.contracts == 'true' }}
+        run: make version urls
+
+      - name: Install shfmt and shellcheck
+        if: ${{ !cancelled() && steps.filter.outputs.shell == 'true' }}
+        uses: taiki-e/install-action@ab6895351a88b908e96a4697860d4ffea5e57dbe # v2.87.27
+        with:
+          tool: shfmt,shellcheck
+
+      - name: Format check shell scripts
+        if: ${{ !cancelled() && steps.filter.outputs.shell == 'true' }}
+        run: shfmt --diff scripts/
+
+      - name: Lint shell scripts
+        if: ${{ !cancelled() && steps.filter.outputs.shell == 'true' }}
+        run: shellcheck scripts/*.sh
+
+      - name: Lint workflows
+        if: ${{ !cancelled() && steps.filter.outputs.workflows == 'true' }}
+        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
+        with:
+          # renovate: datasource=github-releases depName=rhysd/actionlint
+          version: 1.7.12
+          shellcheck: true
+
+      - name: Format check
+        if: ${{ !cancelled() && steps.filter.outputs.format == 'true' }}
+        run: npx --yes prettier@3.9.10 --check .
+
+      - name: Lint Markdown
+        if: ${{ !cancelled() && steps.filter.outputs.markdown == 'true' }}
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
+        with:
+          globs: |
+            **/*.md
+            !CHANGELOG.md
+
+  tests:
+    name: Tests
+    needs: checks
+    if: ${{ !cancelled() && needs.checks.outputs.rust == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -94,10 +148,10 @@ jobs:
       - name: Cargo test
         run: cargo test --workspace --locked
 
-  lint:
-    name: Lint (clippy + rustfmt)
-    needs: changes
-    if: ${{ needs.changes.outputs.rust == 'true' }}
+  clippy:
+    name: Clippy
+    needs: checks
+    if: ${{ !cancelled() && needs.checks.outputs.rust == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -120,27 +174,10 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 
-  contracts:
-    name: Version and URL drift
-    needs: changes
-    if: ${{ needs.changes.outputs.contracts == 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      # The endpoints and the version are restated per binding; these targets
-      # are what makes restating them safe.
-      - name: Check drift
-        run: make version urls
-
   js:
-    name: JS (eslint + prettier + tsc + vitest)
-    needs: changes
-    if: ${{ needs.changes.outputs.js == 'true' }}
+    name: JS
+    needs: checks
+    if: ${{ !cancelled() && needs.checks.outputs.js == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -157,8 +194,6 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
-      # Must match wasm-bindgen in crates/wasm/Cargo.toml down to the patch,
-      # or the glue refuses to load the module it was generated for.
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@ab6895351a88b908e96a4697860d4ffea5e57dbe # v2.87.27
         with:
@@ -195,9 +230,9 @@ jobs:
         run: npm test
 
   php:
-    name: PHP (pint + tests)
-    needs: changes
-    if: ${{ needs.changes.outputs.php == 'true' }}
+    name: PHP
+    needs: checks
+    if: ${{ !cancelled() && needs.checks.outputs.php == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -212,7 +247,6 @@ jobs:
       - name: Cache Cargo
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
 
-      # ffi.enable defaults to "preload", which refuses a runtime FFI::cdef.
       - name: Set up PHP
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
@@ -226,8 +260,6 @@ jobs:
         with:
           tool: cbindgen
 
-      # php/lib/pepito.h is not committed, generated fresh here and by the
-      # installer plugin's downloaded release tarball, never checked in.
       - name: Generate the C header
         run: make header
 
@@ -250,89 +282,3 @@ jobs:
 
       - name: Test without FFI
         run: php -d ffi.enable=0 vendor/bin/phpunit
-
-  cargo-audit:
-    name: Cargo audit
-    needs: changes
-    if: ${{ needs.changes.outputs.deps == 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Install cargo-audit
-        uses: taiki-e/install-action@ab6895351a88b908e96a4697860d4ffea5e57dbe # v2.87.27
-        with:
-          tool: cargo-audit
-
-      - name: Cargo audit
-        shell: bash
-        run: |
-          set -uo pipefail
-          if cargo audit --color never 2>&1 | tee audit.log; then
-            exit 0
-          fi
-          echo "::warning title=cargo audit::Advisories found - see the job summary. Not blocking this pull request."
-          {
-            echo "### cargo audit findings"
-            echo
-            echo '```text'
-            cat audit.log
-            echo '```'
-          } >>"$GITHUB_STEP_SUMMARY"
-
-  actionlint:
-    name: Lint workflows (actionlint)
-    needs: changes
-    if: ${{ needs.changes.outputs.workflows == 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Lint workflows
-        uses: raven-actions/actionlint@3d39aea434753780c3b3d4a1a31c854b4dbf49d7 # v2.2.0
-        with:
-          # renovate: datasource=github-releases depName=rhysd/actionlint
-          version: 1.7.12
-          shellcheck: true
-
-  prettier:
-    name: Formatting (Prettier)
-    needs: changes
-    if: ${{ needs.changes.outputs.format == 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Format check
-        run: npx --yes prettier@3.9.10 --check .
-
-  markdownlint:
-    name: Markdown lint
-    needs: changes
-    if: ${{ needs.changes.outputs.markdown == 'true' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Lint Markdown
-        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff # v24.2.0
-        with:
-          globs: |
-            **/*.md
-            !CHANGELOG.md

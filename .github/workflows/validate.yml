@@ -43,9 +43,11 @@ jobs:
             js:
               - *rust
               - 'js/**'
+              - 'Makefile'
             php:
               - *rust
               - 'php/**'
+              - 'Makefile'
               - 'composer.json'
               - 'composer.lock'
               - 'pint.json'

@@ -16,6 +16,9 @@ export default defineConfig({
     minify: false,
     rollupOptions: {
       external: ['node:fs/promises', 'node:url'],
+      output: {
+        chunkFileNames: 'pepito-shared.cjs',
+      },
     },
   },
 });

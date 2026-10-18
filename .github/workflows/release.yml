@@ -7,6 +7,8 @@ on:
       - 'crates/**'
       - 'js/src/**'
       - 'js/package.json'
+      - 'js/vite*.config.ts'
+      - 'js/tsconfig.build.json'
       - 'php/src/**'
       - 'Cargo.toml'
       - 'Cargo.lock'

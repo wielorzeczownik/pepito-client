@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.8](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.7...v3.2.8) - 2026-10-18
+
+### Performance
+
+- Stop inlining the wasm binary into the bundles (#53) ([b0087c5](https://github.com/wielorzeczownik/pepito-client/commit/b0087c51e21d6d33c45f99c314635d45ce8154ad))
+
 ## [3.2.7](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.6...v3.2.7) - 2026-10-18
 
 ### Bug Fixes

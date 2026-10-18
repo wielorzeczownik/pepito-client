@@ -21,8 +21,7 @@ The tracker and the archive statistics exist three times: `crates/core/src/`, `j
 ├── php/src/         Tracker + History (plain PHP port, default), FfiTracker (opt-in); PHP 8.2+, PSR-4
 ├── php/lib/         pepito.h generated from crates/ffi + the built library
 └── scripts/
-    ├── bump-version.sh     determines and applies the next release version from git-cliff output
-    └── security-audit.sh   runs cargo/composer/npm audit, fixes what npm can, reports the rest
+    └── bump-version.sh     determines and applies the next release version from git-cliff output
 ```
 
 ## Development setup

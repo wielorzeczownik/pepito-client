@@ -11,7 +11,7 @@ export default defineConfig({
     },
     outDir: 'dist',
     emptyOutDir: false,
-    sourcemap: true,
+    sourcemap: false,
     minify: false,
     rollupOptions: {
       external: ['node:fs/promises'],

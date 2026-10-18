@@ -13,8 +13,12 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: false,
     sourcemap: true,
+    minify: false,
     rollupOptions: {
       external: ['node:fs/promises', 'node:url'],
+      output: {
+        chunkFileNames: 'pepito-shared.cjs',
+      },
     },
   },
 });

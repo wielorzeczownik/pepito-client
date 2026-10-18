@@ -5,6 +5,12 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.9](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.8...v3.2.9) - 2026-10-18
+
+### Performance
+
+- Stop publishing source maps (#54) ([b50dabd](https://github.com/wielorzeczownik/pepito-client/commit/b50dabdf51a02bb1372280af57aeb37a538e16d6))
+
 ## [3.2.8](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.7...v3.2.8) - 2026-10-18
 
 ### Performance

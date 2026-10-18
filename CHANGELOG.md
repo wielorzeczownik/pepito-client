@@ -5,6 +5,20 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.7](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.6...v3.2.7) - 2026-10-18
+
+### Bug Fixes
+
+- Publish unminified bundles with stable file names (#52) ([3191302](https://github.com/wielorzeczownik/pepito-client/commit/3191302a35cd258a359a2eae6af19a79c60f0dd3))
+
+### CI/CD
+
+- Install tools only when releasing and unify job names (#51) ([0d9edae](https://github.com/wielorzeczownik/pepito-client/commit/0d9edaeee90c8759931004c4ae8588867acd66fc))
+- Hand dependency fixes to renovate (#50) ([b4b1eef](https://github.com/wielorzeczownik/pepito-client/commit/b4b1eef4943167866f91c2990021cd1c0978eccd))
+- Merge light checks into one job and render audit reports ([2fbed8f](https://github.com/wielorzeczownik/pepito-client/commit/2fbed8f54147ebaf75be03cd1000b87b69e1681e))
+- Batch updates weekly and skip bot PRs in label/assign ([7a5e153](https://github.com/wielorzeczownik/pepito-client/commit/7a5e15363fd3ee7cdfbadd0f698bc9b50db8e024))
+- Update taiki-e/install-action action to v2.87.27 (#48) ([e73bd45](https://github.com/wielorzeczownik/pepito-client/commit/e73bd454e56c774d3fc4cbbc262a270f4a75f73e))
+
 ## [3.2.6](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.5...v3.2.6) - 2026-10-17
 
 ### Build System

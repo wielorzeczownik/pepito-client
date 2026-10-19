@@ -4,13 +4,6 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["^\\.github/workflows/(validate|release)\\.yml$"],
-      "matchStrings": ["wasm-bindgen-cli@(?<currentValue>\\d+\\.\\d+\\.\\d+)"],
-      "depNameTemplate": "wasm-bindgen-cli",
-      "datasourceTemplate": "crate"
-    },
-    {
-      "customType": "regex",
       "fileMatch": ["^Makefile$", "^README\\.md$"],
       "matchStrings": [
         "wasm-bindgen-cli --version (?<currentValue>\\d+\\.\\d+\\.\\d+)"

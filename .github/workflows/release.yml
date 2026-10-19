@@ -22,6 +22,10 @@ concurrency:
   group: release-main
   cancel-in-progress: false
 
+env:
+  # renovate: datasource=crate depName=wasm-bindgen-cli
+  WASM_BINDGEN_CLI_VERSION: 0.2.128
+
 jobs:
   prepare-release:
     name: Prepare release
@@ -332,7 +336,7 @@ jobs:
       - name: Install wasm-bindgen-cli
         uses: taiki-e/install-action@ab6895351a88b908e96a4697860d4ffea5e57dbe # v2.87.27
         with:
-          tool: wasm-bindgen-cli@0.2.128
+          tool: wasm-bindgen-cli@${{ env.WASM_BINDGEN_CLI_VERSION }}
 
       - name: Set up Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

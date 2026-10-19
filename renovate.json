@@ -21,10 +21,6 @@
   ],
   "packageRules": [
     {
-      "matchDepTypes": ["devDependencies"],
-      "semanticCommitType": "build"
-    },
-    {
       "matchPackageNames": ["wasm-bindgen", "wasm-bindgen-cli"],
       "groupName": "wasm-bindgen"
     },
@@ -35,10 +31,6 @@
     {
       "matchPackageNames": ["phpunit/phpunit"],
       "allowedVersions": "<12.0.0"
-    },
-    {
-      "matchPackageNames": ["typescript"],
-      "allowedVersions": "<6.1.0"
     }
   ]
 }

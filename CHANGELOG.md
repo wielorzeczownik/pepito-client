@@ -5,6 +5,37 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.10](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.9...v3.2.10) - 2026-10-21
+
+### Bug Fixes
+
+- Match breaking changes by field so they get their own section ([13f9bcf](https://github.com/wielorzeczownik/pepito-client/commit/13f9bcf69256726cae83f49ac2100fb2d4ccf8f8))
+- Group fix(deps) updates under dependencies ([bdd1ded](https://github.com/wielorzeczownik/pepito-client/commit/bdd1ded523c331ffcd61e98ce10b9aa7214e06fb))
+
+### Documentation
+
+- Explain how to verify attestations in release notes ([dbe1bf9](https://github.com/wielorzeczownik/pepito-client/commit/dbe1bf937396c367ad4c7be93a0d4ec8dcbdfc09))
+- Use shared code of conduct from .github ([01d8726](https://github.com/wielorzeczownik/pepito-client/commit/01d872697d19009387d7ff7fa84c6f1b471e3c4e))
+
+### Build System
+
+- Migrate fileMatch to managerFilePatterns ([c4f17f1](https://github.com/wielorzeczownik/pepito-client/commit/c4f17f157cad9dc789795e6d9edae9f6a430cc83))
+- Use built-in manager for workflow tool versions ([8cb02d4](https://github.com/wielorzeczownik/pepito-client/commit/8cb02d4897bd23eaa2be5d4a34ad345b288798ce))
+- Drop rules covered by shared preset ([de2d1e4](https://github.com/wielorzeczownik/pepito-client/commit/de2d1e40bc2ccbce3eb77342da1c21e58aea4149))
+- Extend shared preset from .github ([32eeed7](https://github.com/wielorzeczownik/pepito-client/commit/32eeed75739593963b0f7facbce539cc92686eb2))
+- Open one pull request per dependency (#57) ([6d6cdc4](https://github.com/wielorzeczownik/pepito-client/commit/6d6cdc45511b26e644b13db1df3996900906dd3a))
+- Update dependency vitest to v5.0.5 (#55) ([e23aead](https://github.com/wielorzeczownik/pepito-client/commit/e23aead1bcbef276e241e90b4a7475ee5af5a762))
+
+### CI/CD
+
+- Attest the sbom alongside the library archives ([7509fc5](https://github.com/wielorzeczownik/pepito-client/commit/7509fc5d35100097ff49ffe5507e7710c5282b26))
+- Attach an spdx sbom to releases ([36f53f9](https://github.com/wielorzeczownik/pepito-client/commit/36f53f961b0550cd26ab41dc26ea3774e8e0020e))
+- Move pinned tool versions to workflow env ([45fd6b4](https://github.com/wielorzeczownik/pepito-client/commit/45fd6b444e5bcedbe82023d774187588bc2e9885))
+
+### Dependencies
+
+- Lock file maintenance (#56) ([b9f95f2](https://github.com/wielorzeczownik/pepito-client/commit/b9f95f298fb3e6ec68737b514d8c140574b770ac))
+
 ## [3.2.9](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.8...v3.2.9) - 2026-10-18
 
 ### Performance
@@ -81,10 +112,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.2.3](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.2...v3.2.3) - 2026-10-08
 
-### Bug Fixes
-
-- Resolve npm audit advisories ([daad16e](https://github.com/wielorzeczownik/pepito-client/commit/daad16ea5d41dc17bf7f7bf4351b12099e86ed33))
-
 ### Build System
 
 - Update dependency eslint to v10.12.0 (#31) ([7df7d54](https://github.com/wielorzeczownik/pepito-client/commit/7df7d54b0857a96c7e630c78cd60f4db6cccadc0))
@@ -102,6 +129,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Dependencies
 
 - Update dependency phpunit/phpunit to v11.5.57 (#34) ([c4aeb93](https://github.com/wielorzeczownik/pepito-client/commit/c4aeb93a7d1d5ec3302ccfa2db4a5a576f7b9676))
+- Resolve npm audit advisories ([daad16e](https://github.com/wielorzeczownik/pepito-client/commit/daad16ea5d41dc17bf7f7bf4351b12099e86ed33))
 
 ## [3.2.2](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.1...v3.2.2) - 2026-09-29
 
@@ -160,23 +188,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.0.0](https://github.com/wielorzeczownik/pepito-client/compare/v2.0.0...v3.0.0) - 2026-09-24
 
-### Features
+### Breaking Changes
 
 - Plain PHP core by default, FFI as opt-in through withFfi() (#7) ([f1df728](https://github.com/wielorzeczownik/pepito-client/commit/f1df7284ad737c076e7a6715488a0391bdbdf885))
 
 ## [2.0.0](https://github.com/wielorzeczownik/pepito-client/compare/v1.0.0...v2.0.0) - 2026-09-24
 
-### Features
+### Breaking Changes
 
 - Plain TS core by default, wasm as opt-in under /wasm (#6) ([7507fc0](https://github.com/wielorzeczownik/pepito-client/commit/7507fc00305e2f4b2e1946938212ed4e540c2c85))
 
 ## [1.0.0](https://github.com/wielorzeczownik/pepito-client/compare/v0.1.2...v1.0.0) - 2026-09-23
 
+### Breaking Changes
+
+- Add WatchOptions and log reconnects in net::watch ([98ffbcd](https://github.com/wielorzeczownik/pepito-client/commit/98ffbcd20e9b7a4f7d34c48b40e4fad367abb84e))
+- Take the caller's reqwest client in net, stop forcing a TLS backend ([28367ee](https://github.com/wielorzeczownik/pepito-client/commit/28367ee645a2255ba954e6f9401bc7b911401f97))
+
 ### Features
 
 - Take your own fetch, add idleTimeout, check refresh() status ([0e8aa00](https://github.com/wielorzeczownik/pepito-client/commit/0e8aa0088a0bdfc98d3dba5ef46fe2827b4d0a66))
-- Add WatchOptions and log reconnects in net::watch ([98ffbcd](https://github.com/wielorzeczownik/pepito-client/commit/98ffbcd20e9b7a4f7d34c48b40e4fad367abb84e))
-- Take the caller's reqwest client in net, stop forcing a TLS backend ([28367ee](https://github.com/wielorzeczownik/pepito-client/commit/28367ee645a2255ba954e6f9401bc7b911401f97))
 
 ### CI/CD
 

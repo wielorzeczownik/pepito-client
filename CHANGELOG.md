@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.11](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.10...v3.2.11) - 2026-10-26
+
+### Security
+
+- Update rust crate tokio to v1.54.1 [security] (#59) ([225e3a5](https://github.com/wielorzeczownik/pepito-client/commit/225e3a52c360920cc413c528d316762e98448b24))
+
+### Bug Fixes
+
+- Draft releases before uploading assets (#61) ([ec95b5b](https://github.com/wielorzeczownik/pepito-client/commit/ec95b5b837e6139524ce3d231acd6a6205d20350))
+
+### CI/CD
+
+- Update dtolnay/rust-toolchain digest to b725eda (#62) ([94f8dce](https://github.com/wielorzeczownik/pepito-client/commit/94f8dce56c5b5c69a877770fbe662d13373e3054))
+- Cut release candidates on push and stable releases weekly (#60) ([543ecdd](https://github.com/wielorzeczownik/pepito-client/commit/543ecdd36ac9e5199a6482a0beacd8c09ba3847c))
+
+### Dependencies
+
+- Update dependency vite to v8.3.5 (#63) ([147b142](https://github.com/wielorzeczownik/pepito-client/commit/147b1426a3ec39e0f1e29ea8475985f94da5f3af))
+
 ## [3.2.10](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.9...v3.2.10) - 2026-10-21
 
 ### Bug Fixes

@@ -32,7 +32,7 @@ env:
 jobs:
   prepare-release:
     name: Prepare release
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     permissions:
       contents: write
@@ -299,7 +299,7 @@ jobs:
     name: Publish crates
     needs: prepare-release
     if: ${{ needs.prepare-release.outputs.released == 'true' && needs.prepare-release.outputs.prerelease != 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     environment: release
     permissions:
@@ -329,7 +329,7 @@ jobs:
     name: Publish npm
     needs: prepare-release
     if: ${{ needs.prepare-release.outputs.released == 'true' && needs.prepare-release.outputs.prerelease != 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     environment: release
     permissions:
@@ -392,7 +392,7 @@ jobs:
     name: Release
     needs: [prepare-release, build-library, publish-crate, publish-npm]
     if: ${{ !cancelled() && !failure() && needs.prepare-release.outputs.released == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     environment:
       name: release

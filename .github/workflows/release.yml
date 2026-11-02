@@ -93,7 +93,7 @@ jobs:
         if: ${{ steps.userfacing.outputs.count != '0' && steps.kind.outputs.kind == 'stable' }}
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
 
       - name: Install rust toolchain
         if: ${{ steps.userfacing.outputs.count != '0' && steps.kind.outputs.kind == 'stable' }}
@@ -359,7 +359,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
           registry-url: https://registry.npmjs.org
           cache: npm
           cache-dependency-path: js/package-lock.json
@@ -378,7 +378,7 @@ jobs:
       - name: Configure npm for GitHub Packages
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
-          node-version: 24
+          node-version: 26
           registry-url: https://npm.pkg.github.com
           scope: '@wielorzeczownik'
 

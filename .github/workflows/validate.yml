@@ -21,7 +21,7 @@ env:
 jobs:
   checks:
     name: Checks
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 15
     permissions:
       contents: read
@@ -123,7 +123,7 @@ jobs:
     name: Tests
     needs: checks
     if: ${{ !cancelled() && needs.checks.outputs.rust == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -144,7 +144,7 @@ jobs:
     name: Clippy
     needs: checks
     if: ${{ !cancelled() && needs.checks.outputs.rust == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -170,7 +170,7 @@ jobs:
     name: JS
     needs: checks
     if: ${{ !cancelled() && needs.checks.outputs.js == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -225,7 +225,7 @@ jobs:
     name: PHP
     needs: checks
     if: ${{ !cancelled() && needs.checks.outputs.php == 'true' }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     steps:
       - name: Checkout

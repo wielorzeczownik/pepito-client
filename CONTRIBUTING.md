@@ -30,7 +30,7 @@ The tracker and the archive statistics exist three times: `crates/core/src/`, `j
 git clone https://github.com/wielorzeczownik/pepito-client.git
 cd pepito-client
 cargo install cbindgen
-cargo install wasm-bindgen-cli --version 0.2.128   # must match crates/wasm/Cargo.toml down to the patch
+cargo install wasm-bindgen-cli --version 0.2.130   # must match crates/wasm/Cargo.toml down to the patch
 composer install
 cargo test --workspace --locked
 make wasm    # the wasm build for js/, needed by the JS parity tests

@@ -16,7 +16,7 @@ env:
   # renovate: datasource=npm depName=prettier
   PRETTIER_VERSION: 3.9.10
   # renovate: datasource=crate depName=wasm-bindgen-cli
-  WASM_BINDGEN_CLI_VERSION: 0.2.128
+  WASM_BINDGEN_CLI_VERSION: 0.2.130
 
 jobs:
   checks:

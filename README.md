@@ -55,7 +55,7 @@ Tools needed only for building the bindings:
 
 ```sh
 cargo install cbindgen
-cargo install wasm-bindgen-cli --version 0.2.128   # must match crates/wasm/Cargo.toml down to the patch
+cargo install wasm-bindgen-cli --version 0.2.130   # must match crates/wasm/Cargo.toml down to the patch
 ```
 
 ## Disclaimer

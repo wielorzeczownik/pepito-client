@@ -24,7 +24,7 @@ urls:
 	done
 
 wasm:
-	@command -v wasm-bindgen >/dev/null || { echo "no wasm-bindgen: cargo install wasm-bindgen-cli --version 0.2.128"; exit 1; }
+	@command -v wasm-bindgen >/dev/null || { echo "no wasm-bindgen: cargo install wasm-bindgen-cli --version 0.2.130"; exit 1; }
 	cargo build --release --target wasm32-unknown-unknown -p pepito-wasm
 	wasm-bindgen --target web --omit-default-module-path --out-dir js/src/wasm --out-name pepito \
 		target/wasm32-unknown-unknown/release/pepito_wasm.wasm

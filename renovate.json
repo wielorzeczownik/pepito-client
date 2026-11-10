@@ -4,7 +4,11 @@
   "customManagers": [
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^Makefile$/", "/^README\\.md$/", "/^CONTRIBUTING\\.md$/"],
+      "managerFilePatterns": [
+        "/^Makefile$/",
+        "/^README\\.md$/",
+        "/^CONTRIBUTING\\.md$/"
+      ],
       "matchStrings": [
         "wasm-bindgen-cli --version (?<currentValue>\\d+\\.\\d+\\.\\d+)"
       ],

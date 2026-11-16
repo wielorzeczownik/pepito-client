@@ -5,6 +5,36 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.12](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.11...v3.2.12) - 2026-11-16
+
+### CI/CD
+
+- Update softprops/action-gh-release action to v3.0.4 (#85) ([08fa678](https://github.com/wielorzeczownik/pepito-client/commit/08fa678121b4f359aef2fa3b700bd75a6eaa8f53))
+- Update taiki-e/install-action action to v2.89.0 (#81) ([04001c7](https://github.com/wielorzeczownik/pepito-client/commit/04001c7669209993686a1fa0b0cd80e6a90ce015))
+- Create lightweight tags ([86c1137](https://github.com/wielorzeczownik/pepito-client/commit/86c1137450c141b3c3dafe5a6cfe5783673b64ec))
+- Update swatinem/rust-cache action to v2.9.3 (#72) ([c48c34c](https://github.com/wielorzeczownik/pepito-client/commit/c48c34ccb476235dc6efad4bed6b529649d994f6))
+- Update taiki-e/install-action action to v2.87.31 (#73) ([1a9afa9](https://github.com/wielorzeczownik/pepito-client/commit/1a9afa912bbd61d2222ad41c9ead84916e3f432b))
+- Update pozil/auto-assign-issue action to v4.1.0 (#74) ([1e159d1](https://github.com/wielorzeczownik/pepito-client/commit/1e159d1bb8a08b3be3a22c2d971ab02e5c81eeed))
+- Update davidanson/markdownlint-cli2-action action to v25 (#75) ([96cce5a](https://github.com/wielorzeczownik/pepito-client/commit/96cce5ace38a06392001b75f7e003c0615e65282))
+- Update dependency node to v26 (#76) ([c077fca](https://github.com/wielorzeczownik/pepito-client/commit/c077fca4ecce0e0fc2eb8d50cb372c0a194d2d42))
+- Update rust-lang/crates-io-auth-action action to v1.0.6 (#71) ([fcba5a1](https://github.com/wielorzeczownik/pepito-client/commit/fcba5a18426f601ef6cce56fa2ee0779c54e9957))
+- Update taiki-e/install-action action to v2.87.29 (#64) ([d9b9de5](https://github.com/wielorzeczownik/pepito-client/commit/d9b9de547b19689c05af7f34c3a514f0c2c4051a))
+
+### Dependencies
+
+- Update dependency vite to v8.3.8 (#84) ([6daacbf](https://github.com/wielorzeczownik/pepito-client/commit/6daacbff3a35c6f9b9c598575d284c3536792f36))
+- Update dependency typescript-eslint to v8.72.2 (#83) ([0fea442](https://github.com/wielorzeczownik/pepito-client/commit/0fea44255e79625216ff22e2e79e438387790981))
+- Update rust crate wasm-bindgen to v0.2.130 (#78) ([4426f0b](https://github.com/wielorzeczownik/pepito-client/commit/4426f0b24a262765264a8df25e4c33647fe97275))
+- Lock file maintenance (#82) ([49761cf](https://github.com/wielorzeczownik/pepito-client/commit/49761cf7ccebd7edc33371db333898b31f3cf57f))
+- Update dependency vitest to v5.1.0 (#80) ([211acd4](https://github.com/wielorzeczownik/pepito-client/commit/211acd4d7dd12fb89814a17ee61ac2c16f68e809))
+- Update dependency eslint to v10.14.0 (#79) ([aa09fe4](https://github.com/wielorzeczownik/pepito-client/commit/aa09fe436303442bafdc19d43730b7d80570a0a3))
+- Update dependency vite to v8.3.6 (#77) ([f7b15a2](https://github.com/wielorzeczownik/pepito-client/commit/f7b15a21b241a9c91613334e2ceb46d774186a87))
+- Lock file maintenance (#69) ([3855908](https://github.com/wielorzeczownik/pepito-client/commit/385590867dabeee2c0f81ba01f6734ccbdc63b95))
+- Update dependency typescript-eslint to v8.72.1 (#70) ([cf37be9](https://github.com/wielorzeczownik/pepito-client/commit/cf37be9bcc787a1bfbb8893cfcbb19676fafa349))
+- Update dependency eslint-plugin-unicorn to v79 (#67) ([96097ea](https://github.com/wielorzeczownik/pepito-client/commit/96097eaa3535b3e4b2c80a09493e6cd4965bc45c))
+- Update dependency typescript-eslint to v8.72.0 (#66) ([067d6fc](https://github.com/wielorzeczownik/pepito-client/commit/067d6fccb905ce7ae18a627d6a44481e88d4abcf))
+- Update dependency eslint to v10.13.0 (#65) ([b9df755](https://github.com/wielorzeczownik/pepito-client/commit/b9df755d095a6f31426fe6fd1128a7d36fc06bf3))
+
 ## [3.2.11](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.10...v3.2.11) - 2026-10-26
 
 ### Security

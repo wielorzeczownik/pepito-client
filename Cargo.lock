@@ -724,7 +724,7 @@ checksum = "7e036b411754132fd6b74e94b74e9a13c5cf606fa93d1885c35860d3060820b1"
 
 [[package]]
 name = "pepito-client"
-version = "3.2.12"
+version = "3.2.13"
 dependencies = [
  "chrono",
  "futures-timer",
@@ -738,7 +738,7 @@ dependencies = [
 
 [[package]]
 name = "pepito-ffi"
-version = "3.2.12"
+version = "3.2.13"
 dependencies = [
  "pepito-client",
  "serde_json",
@@ -746,7 +746,7 @@ dependencies = [
 
 [[package]]
 name = "pepito-wasm"
-version = "3.2.12"
+version = "3.2.13"
 dependencies = [
  "js-sys",
  "pepito-client",

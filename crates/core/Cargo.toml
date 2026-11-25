@@ -16,7 +16,7 @@ serde.workspace = true
 serde_json.workspace = true
 
 # Date/time
-chrono = { version = "0.4.45", default-features = false, features = ["std", "alloc"] }
+jiff = { version = "1.0.3", default-features = false, features = ["std"] }
 
 # Network client, feature "net" only. No TLS backend here: the caller's own client
 # brings one, or the "rustls" feature does.

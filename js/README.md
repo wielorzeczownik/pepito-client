@@ -15,7 +15,9 @@ npm install @wielorzeczownik/pepito-client
 ```js
 import { Pepito } from '@wielorzeczownik/pepito-client';
 
-const p = new Pepito(localStorage.getItem('pepito') ?? undefined);
+const p = new Pepito({
+  snapshot: localStorage.getItem('pepito') ?? undefined,
+});
 
 await p.refresh();
 console.log(p.state); // { state: "away", since, age, healthy, count_in, count_out }
@@ -39,7 +41,8 @@ Your own `fetch`
 import { fetch, ProxyAgent } from 'undici';
 
 const proxy = new ProxyAgent('http://127.0.0.1:8080');
-const p = new Pepito(snapshot, {
+const p = new Pepito({
+  snapshot,
   fetch: (url, init) => fetch(url, { ...init, dispatcher: proxy }),
 });
 ```

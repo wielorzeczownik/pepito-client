@@ -63,6 +63,10 @@ export interface PepitoEventMap {
 
 export interface PepitoOptions {
   /**
+  A snapshot from `snapshot()`, to pick up where it left off.
+  */
+  snapshot?: string | object;
+  /**
   Your own fetch. Defaults to the global `fetch`.
   */
   fetch?: typeof fetch;

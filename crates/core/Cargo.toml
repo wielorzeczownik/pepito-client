@@ -1,9 +1,9 @@
 [package]
 name = "pepito-client"
-description = "Pepito API client (the cat with the cat flap): SSE events, state, cache and historical statistics. No IO, runs on wasm too."
+description = "Pepito cat flap API client: live in and out events, current status and archive statistics. No IO, runs on wasm too."
 readme = "README.md"
-keywords = ["pepito", "sse", "cat"]
-categories = ["api-bindings"]
+keywords = ["pepito", "cat-flap", "sse", "server-sent-events", "cat"]
+categories = ["api-bindings", "wasm"]
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true

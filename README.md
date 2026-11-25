@@ -8,56 +8,63 @@
   <img src="https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP"/>
 </p>
 
-[Pepito API](https://github.com/Clement87/Pepito-API) client for Rust (crate), JS/TS (npm) and PHP (Composer). The npm and Composer packages are plain TypeScript and plain PHP by default, with nothing native to install. The Rust core is there as an opt-in backend in both wasm under `@wielorzeczownik/pepito-client/wasm`, FFI through `Client::withFfi()`.
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wielorzeczownik/pepito-client/main/assets/logo.svg" alt="pepito-client logo" width="200" />
+</p>
 
-> Reaching for Rust as the shared core just to hand-roll FFI and wasm-bindgen for a cat-door tracker was probably overkill. Three thin implementations in their native languages turned out to be the better default, so that is what the JS and PHP packages ship now. The Rust core stayed, as a crate and as the opt-in backend.
+A client for the [Pepito API](https://github.com/Clement87/Pepito-API), the feed of a cat door that reports when Pépito goes out and comes back. It comes as a Rust crate, an npm package and a Composer package.
 
-Every implementation does SSE parsing, the `Way`/`State`/`Update` enums, the in/out state machine, dedup of repeats after a reconnect, an age-aware status cache, connection heartbeat checks, and statistics from the [Clement87/Pepito-data](https://github.com/Clement87/Pepito-data) archive.
+| Package                                                                                          | Language | Default backend  | Opt-in backend    | Docs                                           |
+| ------------------------------------------------------------------------------------------------ | -------- | ---------------- | ----------------- | ---------------------------------------------- |
+| [`pepito-client`](https://crates.io/crates/pepito-client)                                        | Rust     | Rust             | -                 | [crates/core/README.md](crates/core/README.md) |
+| [`@wielorzeczownik/pepito-client`](https://www.npmjs.com/package/@wielorzeczownik/pepito-client) | JS / TS  | plain TypeScript | Rust through wasm | [js/README.md](js/README.md)                   |
+| [`wielorzeczownik/pepito-client`](https://packagist.org/packages/wielorzeczownik/pepito-client)  | PHP 8.2+ | plain PHP        | Rust through FFI  | [php/README.md](php/README.md)                 |
 
-The Rust core never touches the network. Transport belongs to the binding, which is why the same code runs in wasm (no sockets there) and in PHP. Each binding lives in its own crate so its dependencies never leak into the others: building for PHP does not compile wasm-bindgen, and the wasm build never touches reqwest.
+The npm and Composer packages need nothing native by default. The Rust backend is there if you want it, through `@wielorzeczownik/pepito-client/wasm` or `Client::withFfi()`.
 
-```text
-crates/core/   no-IO core: state, cache, dedup, heartbeat,  -> crates.io
-               archive + stats, feature "net" (your reqwest client)
-crates/ffi/    C ABI, JSON in / JSON out                    -> PHP
-crates/wasm/   wasm-bindgen, JS objects with no JSON round trip -> npm /wasm
+All three do the same things:
 
-js/src/        core.ts: the plain TS port, the default backend
-               pepito.ts: transport (fetch, reconnect, EventTarget), TS types
-               wasm.ts: the same API over crates/wasm, opt-in
-php/src/       Tracker + History: the plain PHP port, the default backend
-               FfiTracker: the same API over crates/ffi, opt-in; PHP 8.2+, PSR-4
-php/lib/       pepito.h generated from crates/ffi + the built library
-php/tests/     php/examples/    not shipped in the Composer package
-```
+- parse the SSE stream into `in`/`out` events and track whether the cat is home
+- drop repeats that arrive again after a reconnect
+- cache the current status and know how old it is
+- watch the heartbeat and reconnect when the stream goes quiet
+- compute statistics from the [Pepito-data](https://github.com/Clement87/Pepito-data) archive
 
-The events, `status()`, the statistics and the snapshot JSON are the shared contract. Snapshots move freely between backends, so a cache written by the plain port restores in the Rust one and back. Parity tests keep the ports honest: `js/tests` runs the TS port against the wasm build and `php/tests/BackendParityTest.php` runs the PHP port against FFI, on the same stream, snapshots and the full archive.
+Events, `status()`, statistics and snapshots are the same in every backend, so a snapshot saved by one restores in any other.
 
-## Usage
+## How it fits together
 
-Each package has its own README with installation and an example:
+The Rust core does no networking. Each binding brings its own transport, which is why the same core runs in wasm and behind PHP's FFI.
 
-- [crates/core/README.md](crates/core/README.md): Rust / crates.io
-- [js/README.md](js/README.md): JS / TS / Node / npm
-- [php/README.md](php/README.md): PHP / Composer
+| Path           | What it is                                                                |
+| -------------- | ------------------------------------------------------------------------- |
+| `crates/core/` | the core, published to crates.io. The `net` feature adds reqwest          |
+| `crates/ffi/`  | C ABI over the core, JSON in and out, used by the PHP package             |
+| `crates/wasm/` | wasm-bindgen over the core, used by `@wielorzeczownik/pepito-client/wasm` |
+| `js/src/`      | the TypeScript port (`core.ts`), transport (`pepito.ts`), wasm wrapper    |
+| `php/src/`     | the PHP port (`Tracker`, `History`), client, FFI wrapper (`FfiTracker`)   |
+
+Each binding is its own crate, so building for PHP doesn't compile wasm-bindgen and the wasm build doesn't pull in reqwest. Parity tests run each port against the Rust core on the same input and fail on any difference.
 
 ## Building
 
-Only the Rust core and the opt-in backends need building. The default JS and PHP packages do not.
+The default JS and PHP packages need no build step. The Rust backends do:
 
 ```sh
-make wasm     # js/dist/ through wasm-bindgen
-make header   # php/lib/pepito.h straight from crates/ffi (needs cbindgen)
-make dylib    # php/lib/pepito.h + php/lib/libpepito.{dylib,so,dll}
+make wasm     # js/src/wasm/ through wasm-bindgen
+make header   # php/lib/pepito.h from crates/ffi
+make dylib    # php/lib/pepito.h and php/lib/libpepito.{dylib,so}
 ```
 
-Tools needed only for building the bindings:
+That needs [cbindgen](https://github.com/mozilla/cbindgen) and wasm-bindgen-cli at exactly the version in `crates/wasm/Cargo.toml`:
 
 ```sh
 cargo install cbindgen
-cargo install wasm-bindgen-cli --version 0.2.130   # must match crates/wasm/Cargo.toml down to the patch
+cargo install wasm-bindgen-cli --version 0.2.130
 ```
 
 ## Disclaimer
 
-This project is community-made and unofficial, and may break if the backend API changes.
+Not official and not affiliated with the Pepito API or its author. If the API changes, this will stop working until it's fixed here.
+
+The cat in the logo is from [Font Awesome Free](https://fontawesome.com), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

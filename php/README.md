@@ -6,7 +6,11 @@
   <img src="https://img.shields.io/badge/PHP-777BB4?style=flat-square&logo=php&logoColor=white" alt="PHP"/>
 </p>
 
-[Pepito API](https://github.com/Clement87/Pepito-API) client in plain PHP. Requires PHP 8.2+ with the `curl` extension, no FFI needed. The Rust core through FFI is an explicit opt-in, see [FFI](#ffi).
+<p align="center">
+  <img src="https://raw.githubusercontent.com/wielorzeczownik/pepito-client/main/assets/logo.svg" alt="pepito-client logo" width="200" />
+</p>
+
+A [Pepito API](https://github.com/Clement87/Pepito-API) client in plain PHP. It needs PHP 8.2+ with the `curl` extension and nothing else. The Rust core through FFI is available as an opt-in, see [FFI](#ffi).
 
 ```sh
 composer require wielorzeczownik/pepito-client
@@ -19,15 +23,18 @@ use Pepito\Client;
 use Pepito\Event\Sighting;
 
 $cacheFile = sys_get_temp_dir() . '/pepito.json';
-$pepito = Client::load($cacheFile);       // state survives across requests
+$pepito = Client::load($cacheFile); // state survives between requests
 
 if ($pepito->state()['age'] > 300) {
     $pepito->refresh();
     $pepito->save($cacheFile);
 }
-echo $pepito->state()['state'];           // away
+echo $pepito->state()['state']; // away
+```
 
-// daemon:
+For a long-running process, `watch()` follows the stream and reconnects on its own:
+
+```php
 $pepito->watch(function ($update) use ($pepito, $cacheFile) {
     if ($update instanceof Sighting && $update->changed) {
         echo $update->way->value, PHP_EOL;
@@ -38,52 +45,45 @@ $pepito->watch(function ($update) use ($pepito, $cacheFile) {
 
 ## PSR
 
-All integrations go through PSR interfaces and are **optional**. Without them the client uses curl, the system clock and files, so it works with nothing at all installed in `vendor/`.
+Every integration is optional. Without them the client uses curl, the system clock and files.
 
-| Standard        | Where                                        | How to provide it      |
+| Standard        | Used for                                     | Set with               |
 | --------------- | -------------------------------------------- | ---------------------- |
-| PSR-4           | autoloading, `Pepito\`                       | Composer               |
-| PSR-12          | code style                                   | `composer format`      |
 | PSR-3           | reconnect and error logs                     | `setLogger()`          |
 | PSR-14          | events from `feed()`, `watch()`, `refresh()` | `setEventDispatcher()` |
-| PSR-16          | snapshot instead of files                    | `setCache()`           |
+| PSR-16          | storing the snapshot instead of a file       | `setCache()`           |
 | PSR-18 + PSR-17 | `refresh()`                                  | `setHttpClient()`      |
-| PSR-20          | time source for `state()`                    | `setClock()`           |
+| PSR-20          | the clock behind `state()`                   | `setClock()`           |
 
 ```php
 $pepito->setEventDispatcher($bus)->setClock($clock)->setCache($redis, 'cat');
 $pepito->setHttpClient($guzzle, $psr17);
 ```
 
-PSR-14 events are typed, so a listener binds by class: `Pepito\Event\Sighting`, `Pepito\Event\Heartbeat`, both extend `Pepito\Event\Update`.
+Events are typed, so listeners bind by class: `Pepito\Event\Sighting` and `Pepito\Event\Heartbeat`, both extending `Pepito\Event\Update`.
 
-**`watch()` deliberately does not use PSR-18.** That standard describes one request and one response, with no way to ask for a stream, so against an infinite SSE feed a buffering implementation just hangs forever. The stream is handled by curl instead: TLS, unchunking, splitting headers, and silence is detected via `CURLOPT_LOW_SPEED_*`.
+`watch()` always uses curl, not PSR-18. PSR-18 has no way to ask for a stream, so a client that buffers the response would hang forever on an endless SSE feed.
 
 ## Archive
 
 ```php
-$st = Pepito\Client::historyStats(file_get_contents('tweets.json'));
-// total 23564, outings 8339, median outing 58 min, by_hour_out/by_hour_in/by_weekday_out distributions
+$stats = Client::historyStats(file_get_contents('tweets.json'));
+// total, outings, avg_outing_secs, median_outing_secs, by_hour_out, by_hour_in, by_weekday_out
 ```
 
-Pairing outings: an outing is the last `out` before an `in`. Consecutive `out` events, which happen in the archive when a return got lost, count as `unpaired`.
-
-A file that is not an array of tweets throws `Pepito\Exception\InvalidArchiveException`.
+An outing is the last `out` before an `in`. When the archive has several `out` in a row (a return got lost), the extra ones count as `unpaired`. Input that isn't an array of tweets throws `Pepito\Exception\InvalidArchiveException`.
 
 ## FFI
 
-The same client backed by the Rust core through FFI, for raw speed on large archives. It needs the `ffi` extension (with `ffi.enable=1`) and the library. There is no fallback if either is missing you get a `LibraryNotFoundException`, not the plain PHP version running quietly instead.
+The same client on top of the Rust core, faster on large archives. It needs the `ffi` extension with `ffi.enable=1`.
 
 ```php
-$pepito = Pepito\Client::withFfi($snapshot);          // or Client::load($cacheFile, ffi: true)
-$st = Pepito\Client::historyStats($json, ffi: true);
+$pepito = Client::withFfi($snapshot); // or Client::load($cacheFile, ffi: true)
+$stats = Client::historyStats($json, ffi: true);
 ```
 
-Snapshots have the same format in both, so either one restores what the other saved.
+On install, a Composer plugin downloads the prebuilt library for your platform from the GitHub release and checks its SHA-256, so you don't need Rust. Composer asks once whether to trust the plugin (`allow-plugins`).
 
-On install, the Composer plugin (`Pepito\Installer\LibraryInstallerPlugin`) downloads the prebuilt binary for your platform from the GitHub Release and verifies it by SHA-256, so you never need a Rust toolchain. Composer 2.2+ will ask on the first `require` whether to trust this plugin (`allow-plugins`).
+If the extension or the library is missing you get a `LibraryNotFoundException`. It doesn't fall back to the plain PHP version. Snapshots are the same in both, so either one restores what the other saved.
 
-This keeps `php/` self-contained, and it also works unpacked in `vendor/`, where no `target/` exists. C declarations are read from `php/lib/pepito.h`, which cbindgen generates from `crates/ffi` on every `make dylib`, which is what keeps the prototype from silently drifting away from the ABI. A hand-copied signature would drift with no error at all, and a mismatched ABI is UB.
-
-More on the architecture of the whole repo (crates + npm + composer together):
-see the [README](https://github.com/wielorzeczownik/pepito-client#readme) at the repo root.
+This is one of three packages built from the same repository. See the [main README](https://github.com/wielorzeczownik/pepito-client#readme) for how they fit together.

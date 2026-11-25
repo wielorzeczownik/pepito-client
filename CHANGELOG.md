@@ -5,6 +5,22 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.14](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.13...v3.2.14) - 2026-11-25
+
+### Refactoring
+
+- Replace chrono with jiff (#99) ([698a232](https://github.com/wielorzeczownik/pepito-client/commit/698a232fa1e957871c83529ea650ea2150aba19b))
+
+### Documentation
+
+- Rewrite readmes and add an svg logo (#98) ([0ae18ea](https://github.com/wielorzeczownik/pepito-client/commit/0ae18eac620db9a603518ca2624a83b1cef8e298))
+
+### Dependencies
+
+- Update dependency eslint-plugin-unicorn to v80 (#95) ([9aae65a](https://github.com/wielorzeczownik/pepito-client/commit/9aae65a2d4663fc695e7e74eea99fbed981bb6c5))
+- Update dependency typescript-eslint to v8.73.0 (#94) ([a54e505](https://github.com/wielorzeczownik/pepito-client/commit/a54e5051fee15e4056aafe8a09631578fd460bb7))
+- Update dependency eslint to v10.15.0 (#93) ([7ff6999](https://github.com/wielorzeczownik/pepito-client/commit/7ff6999ae40106b69d5e037628c1f39adc9ef4c9))
+
 ## [3.2.13](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.12...v3.2.13) - 2026-11-23
 
 ### Documentation

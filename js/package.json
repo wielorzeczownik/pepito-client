@@ -1,6 +1,6 @@
 {
   "name": "@wielorzeczownik/pepito-client",
-  "version": "3.2.13",
+  "version": "3.2.14",
   "description": "Pepito cat flap API client: live in and out events, current status and archive statistics. Plain TypeScript, with the Rust core as opt-in wasm.",
   "license": "MIT",
   "type": "module",

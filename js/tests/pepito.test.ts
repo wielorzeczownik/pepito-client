@@ -63,13 +63,17 @@ describe('the cache', () => {
     const pepito = new Pepito();
     pepito.feed('data: {"event":"pepito","type":"in","time":1725715521}\n');
 
-    const revived = new Pepito(pepito.snapshot());
+    const revived = new Pepito({ snapshot: pepito.snapshot() });
 
     expect(revived.state.state).toBe('home');
     expect(revived.state.since).toBe(1_725_715_521);
     expect(revived.isStale(10)).toBe(true);
     pepito.close();
     revived.close();
+  });
+
+  it('refuses a snapshot passed the old positional way', () => {
+    expect(() => new Pepito('{}' as never)).toThrow(TypeError);
   });
 
   it('hands events back as plain JS objects', () => {
@@ -96,7 +100,7 @@ describe('your own fetch', () => {
       new Response('{"event":"pepito","type":"in","time":1725715521}'),
       new Response('', { status: 503 }),
     ];
-    const pepito = new Pepito(undefined, {
+    const pepito = new Pepito({
       fetch: (input) => {
         asked.push(new Request(input).url);
         return Promise.resolve(answers.shift() as Response);
@@ -183,10 +187,14 @@ describe.skipIf(!isWasmBuilt)('the wasm build', () => {
     }
     expect(JSON.parse(pure.snapshot())).toEqual(JSON.parse(rust.snapshot()));
     // Snapshots move between backends.
-    expect(new wasm.Pepito(pure.snapshot()).state).toEqual(pure.state);
-    expect(new Pepito(rust.snapshot()).state).toEqual(rust.state);
+    expect(new wasm.Pepito({ snapshot: pure.snapshot() }).state).toEqual(
+      pure.state
+    );
+    expect(new Pepito({ snapshot: rust.snapshot() }).state).toEqual(rust.state);
     for (const garbage of ['', 'garbage', '{"count_in":-1,"count_out":0}']) {
-      expect(new Pepito(garbage).state).toEqual(new wasm.Pepito(garbage).state);
+      expect(new Pepito({ snapshot: garbage }).state).toEqual(
+        new wasm.Pepito({ snapshot: garbage }).state
+      );
     }
     rust.close();
   });

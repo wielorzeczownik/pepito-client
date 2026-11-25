@@ -79,8 +79,12 @@ export class Pepito extends EventTarget {
   #abort: AbortController | undefined;
   #fetch: typeof fetch;
 
-  constructor(snapshot?: string | object, options: PepitoOptions = {}) {
+  constructor(options: PepitoOptions = {}) {
     super();
+    if (typeof options !== 'object') {
+      throw new TypeError('pass the snapshot as new Pepito({ snapshot })');
+    }
+    const { snapshot } = options;
     // Wrapped, since the browser's fetch throws when called on anything but window.
     this.#fetch = options.fetch ?? ((input, request) => fetch(input, request));
     const json =

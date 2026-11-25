@@ -15,7 +15,7 @@ try {
 } catch {
   // no cache yet
 }
-const pepito = new Pepito(snapshot);
+const pepito = new Pepito({ snapshot });
 const save = () => writeFile(cacheFile, pepito.snapshot());
 
 if (process.argv[2] === 'watch') {

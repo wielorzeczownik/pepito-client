@@ -1,7 +1,7 @@
 //! The archive from Clement87/Pepito-data reduced to
 //! the same `Sighting` values as the live stream, plus statistics.
 
-use chrono::{DateTime, Datelike, Timelike};
+use jiff::{Timestamp, fmt::strtime, tz::TimeZone};
 use serde::{Deserialize, Serialize};
 
 use crate::types::{Sighting, Way};
@@ -18,9 +18,10 @@ struct Tweet {
 /// Parses Twitter's own format.
 #[must_use]
 pub fn parse_twitter_time(text: &str) -> Option<i64> {
-  DateTime::parse_from_str(text, "%a %b %d %H:%M:%S %z %Y")
+  strtime::parse("%a %b %d %H:%M:%S %z %Y", text)
+    .and_then(|parsed| parsed.to_timestamp())
     .ok()
-    .map(|parsed| parsed.timestamp())
+    .map(Timestamp::as_second)
 }
 
 /// Parses the tweet archive into sightings, sorted by time
@@ -106,14 +107,19 @@ pub fn stats(sightings: &[Sighting]) -> Stats {
   let mut durations: Vec<i64> = Vec::new();
 
   for sighting in sightings {
-    let utc = DateTime::from_timestamp(sighting.time, 0);
-    let hour = utc.map_or(0, |moment| moment.hour() as usize);
+    let utc = Timestamp::from_second(sighting.time)
+      .ok()
+      .map(|moment| TimeZone::UTC.to_datetime(moment));
+    let hour = utc.map_or(0, |moment| {
+      usize::try_from(moment.hour()).unwrap_or_default()
+    });
     match sighting.way {
       Way::Out => {
         stats.outs += 1;
         stats.by_hour_out[hour] += 1;
         if let Some(moment) = utc {
-          stats.by_weekday_out[moment.weekday().num_days_from_sunday() as usize] += 1;
+          let weekday = moment.weekday().to_sunday_zero_offset();
+          stats.by_weekday_out[usize::try_from(weekday).unwrap_or_default()] += 1;
         }
         if pending.replace(sighting.time).is_some() {
           stats.unpaired += 1;
@@ -156,4 +162,34 @@ pub fn stats(sightings: &[Sighting]) -> Stats {
     stats.median_outing_secs = durations[durations.len() / 2];
   }
   stats
+}
+
+#[cfg(test)]
+mod tests {
+  use super::parse_twitter_time;
+
+  #[test]
+  fn parses_twitter_time() {
+    assert_eq!(
+      parse_twitter_time("Sun Nov 13 10:47:15 +0000 2011"),
+      Some(1_321_181_235)
+    );
+    assert_eq!(
+      parse_twitter_time("Thu Feb 29 23:30:00 -0130 2024"),
+      Some(1_709_254_800)
+    );
+  }
+
+  #[test]
+  fn rejects_impossible_dates() {
+    for text in [
+      "Mon Nov 13 10:47:15 +0000 2011",
+      "Thu Feb 29 10:00:00 +0000 2023",
+      "Sun Nov 13 24:00:00 +0000 2011",
+      "Sun Foo 13 10:47:15 +0000 2011",
+      "",
+    ] {
+      assert_eq!(parse_twitter_time(text), None, "{text}");
+    }
+  }
 }

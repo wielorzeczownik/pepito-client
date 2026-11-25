@@ -1,7 +1,7 @@
 {
   "name": "@wielorzeczownik/pepito-client",
   "version": "3.2.13",
-  "description": "Pepito API client: SSE events, state, cache and historical statistics. Plain TS, with the Rust core as opt-in wasm.",
+  "description": "Pepito cat flap API client: live in and out events, current status and archive statistics. Plain TypeScript, with the Rust core as opt-in wasm.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/pepito.js",
@@ -31,6 +31,8 @@
     "sse",
     "server-sent-events",
     "cat",
+    "cat-flap",
+    "api-client",
     "wasm",
     "rust"
   ],

@@ -5,6 +5,25 @@ All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.13](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.12...v3.2.13) - 2026-11-23
+
+### Documentation
+
+- Make contributing, security and issue forms friendlier (#97) ([3e0a41c](https://github.com/wielorzeczownik/pepito-client/commit/3e0a41cae7fcf9ba3ad90f986eda4d2bd80ec821))
+
+### CI/CD
+
+- Update taiki-e/install-action action to v2.90.5 (#92) ([2ebc400](https://github.com/wielorzeczownik/pepito-client/commit/2ebc400adeb4ff69ca0e8fba12396dd8151e4c44))
+- Update taiki-e/install-action action to v2.90.3 (#87) ([6ccae20](https://github.com/wielorzeczownik/pepito-client/commit/6ccae204fbf28f37b7fd9e1235c24c8df018e248))
+- Update dependency prettier to v3.10.1 (#86) ([f48a86f](https://github.com/wielorzeczownik/pepito-client/commit/f48a86ffbc42d6881f320e2cf8a08e74443ca95c))
+
+### Dependencies
+
+- Lock file maintenance (#96) ([97152fd](https://github.com/wielorzeczownik/pepito-client/commit/97152fda95a5adc7ce7c3291c684a4e247f927dd))
+- Update dependency vitest to v5.1.1 (#91) ([762e744](https://github.com/wielorzeczownik/pepito-client/commit/762e744ec99bd23f8f7006d65b41c5422dbfcb61))
+- Update dependency phpunit/phpunit to v11.5.58 (#90) ([318e329](https://github.com/wielorzeczownik/pepito-client/commit/318e329e38bce445b7c849aa6e4403c99d0271f8))
+- Lock file maintenance (#88) ([7798e61](https://github.com/wielorzeczownik/pepito-client/commit/7798e61731bb00b9a36efa348b82ec143f93541c))
+
 ## [3.2.12](https://github.com/wielorzeczownik/pepito-client/compare/v3.2.11...v3.2.12) - 2026-11-16
 
 ### CI/CD
